@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In • Linksy</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .auth-header {
+            margin-bottom: 32px;
+        }
+
+        .auth-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .auth-subtitle {
+            font-size: 16px;
+            color: #8a8a8a;
+        }
+
+        /* Screen containers for transitions */
+        .auth-screen {
+            display: none;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+        }
+
+        .auth-screen.active {
+            display: block;
+            opacity: 1;
+        }
+
+        /* Initial Choice Screen */
+        .choice-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .auth-option-button {
+            padding: 16px;
+            border: 1px solid #2a2a2a;
+            background: #111111;
+            color: #ffffff;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .auth-option-button:hover {
+            background: #1a1a1a;
+            border-color: #3a3a3a;
+            transform: translateY(-2px);
+        }
+
+        .auth-option-button svg {
+            width: 24px;
+            height: 24px;
+            color: #8a8a8a;
+        }
+
+        /* Sign In & Sign Up Forms */
+        .form-content {
+            background: #111111;
+            padding: 24px;
+            border-radius: 12px;
+            border: 1px solid #2a2a2a;
+            text-align: left;
+        }
+        
+        .form-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .back-button {
+            background: none;
+            border: none;
+            color: #ffffff;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .back-button:hover {
+            background: #2a2a2a;
+        }
+        
+        .form-title {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #8a8a8a;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            background: #0a0a0a;
+            border: 1px solid #3a3a3a;
+            color: #ffffff;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 16px;
+            width: 100%;
+            transition: all 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #1da1f2;
+            box-shadow: 0 0 0 3px rgba(29, 161, 242, 0.2);
+        }
+
+        .form-button {
+            padding: 14px;
+            border: none;
+            background: #1da1f2;
+            color: #ffffff;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+        }
+
+        .form-button:hover {
+            background: #1991db;
+        }
+
+        .form-footer {
+            margin-top: 24px;
+            font-size: 14px;
+            color: #8a8a8a;
+            text-align: center;
+        }
+
+        .form-footer a {
+            color: #1da1f2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <!-- Screen 1: Initial Choice -->
+        <div id="choice-screen" class="auth-screen active">
+            <div class="auth-header">
+                <h1 class="auth-title">Welcome to Linksy</h1>
+                <p class="auth-subtitle">Join the community or sign in to your account.</p>
+            </div>
+            <div class="choice-options">
+                <button class="auth-option-button" id="show-signin">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg>
+                    <span>Sign In</span>
+                </button>
+                <button class="auth-option-button" id="show-signup">
+                    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                    <span>Create Account</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Screen 2: Sign In Form -->
+        <div id="signin-screen" class="auth-screen">
+            <div class="form-content">
+                <div class="form-header">
+                    <button class="back-button back-to-choice" aria-label="Go back">←</button>
+                    <h2 class="form-title">Sign In</h2>
+                </div>
+                <form onsubmit="event.preventDefault();">
+                    <div class="form-group">
+                        <label for="signin-email" class="form-label">Email</label>
+                        <input type="email" id="signin-email" class="form-input" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signin-password" class="form-label">Password</label>
+                        <input type="password" id="signin-password" class="form-input" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="form-button" id="signIn-btn">Sign In</button>
+                    <script>
+                    document.getElementById("signIn-btn").addEventListener("click", function () {
+                        window.location.href = "index.html"; 
+                    });
+                    </script>
+                </form>
+            </div>
+        </div>
+
+        <!-- Screen 3: Sign Up Form -->
+        <div id="signup-screen" class="auth-screen">
+            <div class="form-content">
+                <div class="form-header">
+                    <button class="back-button back-to-choice" aria-label="Go back">←</button>
+                    <h2 class="form-title">Create Account</h2>
+                </div>
+                <form onsubmit="event.preventDefault();">
+                    <div class="form-group">
+                        <label for="signup-name" class="form-label">Name</label>
+                        <input type="text" id="signup-name" class="form-input" placeholder="Aria Thompson" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email" class="form-label">Email</label>
+                        <input type="email" id="signup-email" class="form-input" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password" class="form-label">Password</label>
+                        <input type="password" id="signup-password" class="form-input" placeholder="Create a strong password" required>
+                    </div>
+                    <button type="submit" class="form-button">Create Account</button>
+                </form>
+                <div class="form-footer">
+                    <p>By signing up, you agree to our <a href="#">Terms of Service</a>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const choiceScreen = document.getElementById('choice-screen');
+        const signinScreen = document.getElementById('signin-screen');
+        const signupScreen = document.getElementById('signup-screen');
+
+        const showSigninBtn = document.getElementById('show-signin');
+        const showSignupBtn = document.getElementById('show-signup');
+        const backBtns = document.querySelectorAll('.back-to-choice');
+
+        function showScreen(screenToShow) {
+            // Hide all screens
+            [choiceScreen, signinScreen, signupScreen].forEach(screen => {
+                screen.classList.remove('active');
+            });
+            // Show the target screen
+            screenToShow.classList.add('active');
+        }
+
+        showSigninBtn.addEventListener('click', () => {
+            showScreen(signinScreen);
+        });
+
+        showSignupBtn.addEventListener('click', () => {
+            showScreen(signupScreen);
+        });
+
+        backBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                showScreen(choiceScreen);
+            });
+        });
+    </script>
+</body>
+</html>

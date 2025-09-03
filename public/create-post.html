@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Post</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* MODIFIED: Added background, border, padding, and border-radius */
+        .create-post-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: #111111; /* Differentiated from body */
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 24px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3a3a3a;
+        }
+
+        .user-info h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .user-info .username {
+            color: #8a8a8a;
+            font-size: 14px;
+        }
+
+        .post-form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .caption-container {
+            position: relative;
+        }
+
+        .caption-textarea {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 18px;
+            line-height: 1.4;
+            resize: none;
+            min-height: 120px;
+            padding: 12px 0;
+            outline: none;
+        }
+
+        .caption-textarea::placeholder {
+            color: #8a8a8a;
+            font-size: 18px;
+        }
+
+        .character-count {
+            color: #8a8a8a;
+            font-size: 13px;
+            text-align: right;
+            margin-top: 8px;
+        }
+
+        .character-count.warning { color: #ffd700; }
+        .character-count.error { color: #ff6b6b; }
+
+        .image-upload-container {
+            border: 2px dashed #3a3a3a;
+            border-radius: 16px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #0f0f0f;
+        }
+
+        .image-upload-container:hover {
+            border-color: #1da1f2;
+            background: #141414;
+        }
+
+        .image-upload-container.dragover {
+            border-color: #1da1f2;
+            background: #1a1a2e;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #8a8a8a;
+            margin-bottom: 16px;
+        }
+
+        .upload-text {
+            color: #8a8a8a;
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+
+        .upload-subtext {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .hidden-file-input {
+            display: none;
+        }
+
+        .image-preview-container {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #1a1a1a;
+            display: none;
+        }
+
+        .image-preview {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .overlay-button {
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .overlay-button:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .remove-button {
+            background: rgba(255, 59, 92, 0.8);
+        }
+
+        .remove-button:hover {
+            background: rgba(255, 59, 92, 1);
+        }
+
+        /* MODIFIED: Aligned buttons to the right */
+        .post-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end; /* This moves the buttons to the right */
+            width: 100%;
+        }
+
+        .action-button {
+            padding: 10px 20px;
+            border: 1px solid #3a3a3a;
+            background: none;
+            color: #ffffff;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .action-button:hover:not(:disabled) {
+            background: #1a1a1a;
+        }
+
+        .action-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .post-button {
+            background: #1da1f2;
+            border: 1px solid #1da1f2;
+        }
+
+        .post-button:hover:not(:disabled) {
+            background: #1991db;
+            border-color: #1991db;
+        }
+
+        .post-button:disabled {
+            background: #0f4f71;
+            border-color: #0f4f71;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 15px; }
+            .create-post-container { padding: 16px; }
+            .caption-textarea { font-size: 16px; min-height: 100px; }
+            .image-upload-container { padding: 30px 15px; }
+            .upload-icon { font-size: 36px; }
+            .post-actions { flex-direction: column-reverse; gap: 10px; }
+            .action-button { width: 100%; justify-content: center; }
+        }
+    </style>
+</head>
+<body>
+    <div class="create-post-container">
+        <div class="post-header">
+            <img src="https://images.unsplash.com/photo-1494790108755-2616c9ca8a66?w=96&h=96&fit=crop&crop=face" alt="Your avatar" class="user-avatar">
+            <div class="user-info">
+                <h3>Aria Thompson</h3>
+                <div class="username">@aria</div>
+            </div>
+        </div>
+
+        <form class="post-form" id="postForm">
+            <div class="caption-container">
+                <textarea 
+                    class="caption-textarea" 
+                    id="captionInput"
+                    placeholder="What's on your mind?"
+                    maxlength="500"
+                    rows="6"
+                ></textarea>
+                <div class="character-count" id="characterCount">0/500</div>
+            </div>
+
+            <div class="image-upload-container" id="imageUploadArea">
+                <div class="upload-icon">📷</div>
+                <div class="upload-text">Click to upload an image</div>
+                <div class="upload-subtext">or drag and drop</div>
+                <div class="upload-subtext">JPG, PNG, GIF up to 10MB</div>
+                <input type="file" id="imageInput" class="hidden-file-input" accept="image/*">
+            </div>
+
+            <div class="image-preview-container" id="imagePreview">
+                <img id="previewImage" class="image-preview" alt="Preview">
+                <div class="image-overlay">
+                    <button type="button" class="overlay-button" id="editImageBtn" title="Edit">✏️</button>
+                    <button type="button" class="overlay-button remove-button" id="removeImageBtn" title="Remove">✕</button>
+                </div>
+            </div>
+
+            <div class="post-options">
+                <div class="post-actions">
+                    <button type="submit" class="action-button post-button" id="postBtn" disabled>Post</button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const imageUploadArea = document.getElementById('imageUploadArea');
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const previewImage = document.getElementById('previewImage');
+        const captionInput = document.getElementById('captionInput');
+        const characterCount = document.getElementById('characterCount');
+        const postBtn = document.getElementById('postBtn');
+        const removeImageBtn = document.getElementById('removeImageBtn');
+        const editImageBtn = document.getElementById('editImageBtn');
+        const draftBtn = document.getElementById('draftBtn');
+
+        let currentImage = null;
+
+        // --- Image Upload Logic ---
+        const handleImageUpload = (file) => {
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            if (file.size > 10 * 1024 * 1024) { // 10MB
+                alert('File size must be less than 10MB');
+                return;
+            }
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                currentImage = e.target.result;
+                previewImage.src = currentImage;
+                imageUploadArea.style.display = 'none';
+                imagePreview.style.display = 'block';
+                updatePostButtonState();
+            };
+            reader.readAsDataURL(file);
+        };
+
+        imageUploadArea.addEventListener('click', () => imageInput.click());
+        imageUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.add('dragover');
+        });
+        imageUploadArea.addEventListener('dragleave', () => imageUploadArea.classList.remove('dragover'));
+        imageUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            imageUploadArea.classList.remove('dragover');
+            if (e.dataTransfer.files.length > 0) handleImageUpload(e.dataTransfer.files[0]);
+        });
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) handleImageUpload(e.target.files[0]);
+        });
+        removeImageBtn.addEventListener('click', () => {
+            currentImage = null;
+            previewImage.src = '';
+            imagePreview.style.display = 'none';
+            imageUploadArea.style.display = 'block';
+            imageInput.value = '';
+            updatePostButtonState();
+        });
+        editImageBtn.addEventListener('click', () => alert('Image editing feature coming soon!'));
+
+        // --- Caption and Post Button Logic ---
+        const updatePostButtonState = () => {
+            const hasContent = captionInput.value.trim().length > 0 || currentImage !== null;
+            postBtn.disabled = !hasContent;
+        };
+
+        captionInput.addEventListener('input', () => {
+            const length = captionInput.value.length;
+            const maxLength = 500;
+            characterCount.textContent = `${length}/${maxLength}`;
+            characterCount.classList.toggle('warning', length > maxLength * 0.9 && length < maxLength);
+            characterCount.classList.toggle('error', length >= maxLength);
+            captionInput.style.height = 'auto';
+            captionInput.style.height = captionInput.scrollHeight + 'px';
+            updatePostButtonState();
+        });
+
+        // --- Form Submission and Drafts ---
+        const resetForm = () => {
+            captionInput.value = '';
+            removeImageBtn.click(); // Re-use remove image logic
+            captionInput.dispatchEvent(new Event('input')); // Update character count and button state
+        };
+
+       // Replace the form submission event listener with this updated version:
+
+        document.getElementById('postForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const postData = {
+                caption: captionInput.value.trim(),
+                image: currentImage,
+                timestamp: new Date().toISOString()
+            };
+            console.log('Creating post:', postData);
+            
+            // Create success message container
+            const successMessage = document.createElement('div');
+            successMessage.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: #111111;
+                border: 1px solid #2a2a2a;
+                border-radius: 16px;
+                padding: 32px 24px;
+                text-align: center;
+                z-index: 1000;
+                min-width: 300px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            `;
+            
+            successMessage.innerHTML = `
+                <div style="color: #1da1f2; font-size: 24px; margin-bottom: 16px;">✓</div>
+                <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px; font-weight: 600;">Post Done Successfully!</h3>
+                <p style="color: #8a8a8a; font-size: 14px; margin-bottom: 24px;">Your post has been shared</p>
+                <button id="backToFeedBtn" style="
+                    background: #1da1f2;
+                    border: 2px solid #1da1f2;
+                    color: #ffffff;
+                    padding: 12px 24px;
+                    border-radius: 20px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">Back to Feed</button>
+            `;
+            
+            // Create overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 999;
+            `;
+            
+            // Add to page
+            document.body.appendChild(overlay);
+            document.body.appendChild(successMessage);
+            
+            // Add hover effect to button
+            const backBtn = document.getElementById('backToFeedBtn');
+            backBtn.addEventListener('mouseenter', () => {
+                backBtn.style.background = '#1991db';
+                backBtn.style.borderColor = '#1991db';
+            });
+            backBtn.addEventListener('mouseleave', () => {
+                backBtn.style.background = '#1da1f2';
+                backBtn.style.borderColor = '#1da1f2';
+            });
+            
+            // Handle back to feed click
+            backBtn.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+            
+            // Clear draft and reset form
+            localStorage.removeItem('postDraft');
+            resetForm();
+        });
+        
+        // --- Load Draft on Page Load ---
+        window.addEventListener('load', () => {
+            const savedDraft = localStorage.getItem('postDraft');
+            if (savedDraft) {
+                const draft = JSON.parse(savedDraft);
+                if (confirm('You have a saved draft. Would you like to load it?')) {
+                    captionInput.value = draft.caption || '';
+                    if (draft.image) {
+                        currentImage = draft.image;
+                        previewImage.src = currentImage;
+                        imageUploadArea.style.display = 'none';
+                        imagePreview.style.display = 'block';
+                    }
+                    updatePostButtonState();
+                    captionInput.dispatchEvent(new Event('input'));
+                }
+            }
+        });
+    </script>
+</body>
+</html>
