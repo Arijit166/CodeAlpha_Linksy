@@ -1,0 +1,1464 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>linksy • Home</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --nav-bg: rgba(11, 15, 20, 0.95);
+      --surface: #111111;
+      --surface-light: #1a1a1a;
+      --surface-hover: #222222;
+      --text: #ffffff;
+      --text-secondary: #b3b3b3;
+      --text-muted: #666666;
+      --border: #333333;
+      --border-light: #2a2a2a;
+      --primary: #1d9bf0;
+      --primary-hover: #1a8cd8;
+      --primary-glow: rgba(29, 155, 240, 0.3);
+      --heart: #f91880;
+      --heart-hover: #ff1a8c;
+      --success: #00ba7c;
+      --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --glass-bg: rgba(17, 17, 17, 0.8);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--surface); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { 
+      background: linear-gradient(45deg, var(--primary), var(--heart));
+      border-radius: 3px;
+      transition: all 0.3s ease;
+    }
+    ::-webkit-scrollbar-thumb:hover { 
+      background: linear-gradient(45deg, var(--primary-hover), var(--heart-hover));
+    }
+
+    /* Navbar */
+    .navbar {
+      position: fixed;
+      top: 0;
+      width: 100%;
+      background: var(--nav-bg);
+      border-bottom: 1px solid var(--border);
+      z-index: 1000;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .navbar-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 70px;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-gradient);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: white;
+      font-size: 20px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-spacer { flex: 1; }
+
+    .search-wrap {
+      flex: 1.4;
+      max-width: 540px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .search-wrap:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .search-wrap svg { 
+      width: 20px; 
+      height: 20px; 
+      color: var(--text-secondary);
+      transition: color 0.3s ease;
+    }
+
+    .search-wrap:focus-within svg {
+      color: var(--primary);
+    }
+
+    .search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      width: 100%;
+      font-size: 15px;
+      font-weight: 400;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .nav-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .nav-btn:hover::before {
+      left: 100%;
+    }
+
+    .nav-btn:hover { 
+      background: var(--surface-hover);
+      border-color: var(--border-light);
+      transform: translateY(-1px);
+    }
+
+    .nav-btn.primary { 
+      background: var(--primary);
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .nav-btn.primary:hover { 
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--primary-glow);
+    }
+
+    .nav-icon { width: 20px; height: 20px; }
+
+    /* Main layout */
+    main {
+      margin-top: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+
+    .feed { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 28px; 
+    }
+
+    .post-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+
+    .post-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent-gradient);
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .post-card:hover {
+      border-color: var(--border-light);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .post-card:hover::before {
+      opacity: 1;
+    }
+
+    .post-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 20px;
+    }
+
+    .post-user { display: flex; align-items: center; gap: 14px; }
+    .post-avatar { 
+      width: 42px; 
+      height: 42px; 
+      border-radius: 50%; 
+      object-fit: cover;
+      border: 2px solid var(--border);
+      transition: border-color 0.3s ease;
+    }
+
+    .post-card:hover .post-avatar {
+      border-color: var(--primary);
+    }
+
+    .post-user-info { display: flex; flex-direction: column; }
+    .post-username { 
+      font-size: 15px; 
+      font-weight: 700; 
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+    .post-time { 
+      font-size: 13px; 
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .post-menu {
+      background: none; 
+      border: none; 
+      color: var(--text-secondary); 
+      cursor: pointer; 
+      padding: 10px; 
+      border-radius: 10px;
+      transition: all 0.2s ease;
+    }
+    .post-menu:hover { 
+      background: var(--surface-hover);
+      color: var(--text);
+      transform: scale(1.1);
+    }
+
+    .post-image {
+      height: 500px;
+      width: 100%;
+      object-fit: cover;
+      cursor: pointer;
+      user-select: none;
+      background: #0a0a0a;
+      transition: transform 0.3s ease;
+    }
+
+    .post-image:hover {
+      transform: scale(1.02);
+    }
+
+    .post-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px 8px;
+    }
+    .post-actions-left { display: flex; align-items: center; gap: 20px; }
+
+    .action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      position: relative;
+    }
+    .action-btn:hover { 
+      background: var(--surface-hover);
+      transform: scale(1.1);
+    }
+
+    .action-icon {
+      width: 26px;
+      height: 26px;
+      stroke: var(--text);
+      fill: none;
+      stroke-width: 1.5;
+      transition: all 0.3s ease;
+    }
+
+    .like-icon { transition: all 0.3s ease; }
+    .action-btn.liked .like-icon { 
+      fill: var(--heart); 
+      stroke: var(--heart);
+      transform: scale(1.1);
+    }
+    .action-btn.liked:hover {
+      background: rgba(249, 24, 128, 0.1);
+    }
+
+    @keyframes likeAnimation { 
+      0%{transform:scale(1)} 
+      50%{transform:scale(1.3)} 
+      100%{transform:scale(1)} 
+    }
+    .action-btn.liked { animation: likeAnimation .4s ease; }
+
+    .post-likes { 
+      font-size: 15px; 
+      font-weight: 700; 
+      padding: 0 20px 10px; 
+      color: var(--text);
+      letter-spacing: -0.2px;
+    }
+
+    .post-caption { 
+      padding: 0 20px 10px; 
+      font-size: 15px; 
+      color: var(--text); 
+      line-height: 1.5; 
+    }
+    .caption-username { 
+      font-weight: 700; 
+      margin-right: 6px;
+      color: var(--primary);
+    }
+
+    .post-comments { padding: 0 20px 16px; }
+    .view-comments {
+      background: none; 
+      border: none; 
+      color: var(--text-muted); 
+      cursor: pointer; 
+      font-size: 14px; 
+      margin-bottom: 6px;
+      transition: color 0.2s ease;
+    }
+    .view-comments:hover {
+      color: var(--text-secondary);
+    }
+
+    .comment { 
+      font-size: 14px; 
+      color: var(--text); 
+      margin-bottom: 6px; 
+      line-height: 1.4;
+    }
+    .comment-username { 
+      font-weight: 700; 
+      margin-right: 6px;
+      color: var(--primary);
+    }
+
+    .add-comment {
+      display: flex; 
+      align-items: center; 
+      padding: 16px 20px; 
+      border-top: 1px solid var(--border);
+      background: var(--glass-bg);
+    }
+    .comment-input {
+      flex: 1; 
+      background: none; 
+      border: none; 
+      color: var(--text); 
+      font-size: 14px; 
+      outline: none; 
+      padding: 10px 0;
+    }
+    .comment-input::placeholder { color: var(--text-muted); }
+    .post-comment-btn {
+      background: none; 
+      border: none; 
+      color: var(--primary); 
+      font-weight: 700; 
+      cursor: pointer; 
+      font-size: 14px; 
+      opacity: .4; 
+      transition: all .3s ease;
+      padding: 8px 12px;
+      border-radius: 6px;
+    }
+    .post-comment-btn.active { 
+      opacity: 1;
+      background: rgba(29, 155, 240, 0.1);
+    }
+    .post-comment-btn:hover.active {
+      background: rgba(29, 155, 240, 0.2);
+    }
+
+    /* --- CORRECTED LAYOUT STYLES START --- */
+    
+    .welcome-banner {
+      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-light) 100%);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 0;
+      margin-top: 70px;
+      /* Making the banner sticky below the navbar */
+      position: sticky;
+      top: 70px;
+      z-index: 999;
+    }
+    
+    /* Main layout now uses flexbox to manage children */
+    .main-layout {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 100px;
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    /* The feed will grow to fill available space */
+    .main-feed {
+      flex: 1;
+      min-width: 0; /* Prevents flexbox overflow issues */
+    }
+
+    /* Updated sidebar container styles */
+    .sidebar-container {
+    width: 320px;
+    flex-shrink: 0;
+    height: fit-content;
+    position: sticky;
+    top: 180px; /* Same as before: navbar (70px) + banner (~86px) + padding (24px) */
+    max-height: calc(100vh - 200px); /* Leave some space from viewport edges */
+    }
+
+    /* The suggestions component with independent scrolling */
+    .suggestions {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    max-height: 100%; /* Fill the container height */
+    }
+
+    /* Keep the header fixed at the top of the suggestions box */
+    .suggestions-header {
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    padding: 20px 20px 16px; 
+    border-bottom: 1px solid var(--border);
+    background: var(--glass-bg);
+    flex-shrink: 0; /* Prevent header from shrinking */
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    }
+
+    /* Make the suggestions list scrollable */
+    .suggestions-list { 
+    padding: 12px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px;
+    overflow-y: auto; /* Enable vertical scrolling */
+    flex: 1; /* Take remaining space */
+    scrollbar-width: thin; /* For Firefox */
+    scrollbar-color: var(--primary) var(--surface); /* For Firefox */
+    }
+
+    /* Custom scrollbar for the suggestions list */
+    .suggestions-list::-webkit-scrollbar {
+    width: 4px;
+    }
+
+    .suggestions-list::-webkit-scrollbar-track {
+    background: var(--surface-light);
+    border-radius: 2px;
+    }
+
+    .suggestions-list::-webkit-scrollbar-thumb {
+    background: var(--primary);
+    border-radius: 2px;
+    transition: background 0.3s ease;
+    }
+
+    .suggestions-list::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-hover);
+    }
+
+    .suggestions-title { 
+      font-size: 16px; 
+      font-weight: 800; 
+      letter-spacing: -0.3px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .suggestions-list { 
+      padding: 12px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 8px; 
+    }
+
+    .suggestion-item {
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      gap: 12px; 
+      padding: 14px; 
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .suggestion-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .suggestion-item:hover::before {
+      left: 100%;
+    }
+
+    .suggestion-item:hover { 
+      background: var(--surface-hover);
+      transform: translateX(4px);
+    }
+
+    .sug-user { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      min-width: 0; 
+    }
+
+    .sug-avatar { 
+      width: 40px; 
+      height: 40px; 
+      border-radius: 50%; 
+      object-fit: cover; 
+      flex-shrink: 0;
+      border: 2px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .suggestion-item:hover .sug-avatar {
+      border-color: var(--primary);
+      transform: scale(1.05);
+    }
+
+    .sug-meta { 
+      display: flex; 
+      flex-direction: column; 
+      min-width: 0; 
+    }
+
+    .sug-name { 
+      font-size: 14px; 
+      font-weight: 700; 
+      color: var(--text); 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      white-space: nowrap;
+      letter-spacing: -0.2px;
+    }
+
+    .sug-note { 
+      font-size: 12px; 
+      color: var(--text-muted); 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+
+    .follow-btn {
+      padding: 8px 16px; 
+      border-radius: 10px; 
+      font-size: 13px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      border: 1px solid var(--border);
+      background: var(--primary); 
+      color: #fff; 
+      transition: all .3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .follow-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      transform: translate(-50%, -50%);
+    }
+
+    .follow-btn:hover::before {
+      width: 100%;
+      height: 100%;
+    }
+
+    .follow-btn:hover { 
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .follow-btn.following {
+      background: transparent; 
+      color: var(--success);
+      border-color: var(--success);
+    }
+
+    .follow-btn.following:hover {
+      background: rgba(0, 186, 124, 0.1);
+      transform: translateY(-1px);
+    }
+
+    /* Floating heart animation */
+    .floating-heart {
+      position: fixed;
+      font-size: 120px;
+      color: var(--heart);
+      pointer-events: none;
+      animation: floatHeart 1.2s ease-out forwards;
+      z-index: 3000;
+      left: 0; 
+      top: 0; 
+      transform: translate(-50%, -50%);
+      filter: drop-shadow(0 0 10px var(--heart));
+    }
+    
+    @keyframes floatHeart {
+      0% { 
+        opacity: 0; 
+        transform: translate(-50%, -50%) scale(0) rotate(0deg); 
+      }
+      15% { 
+        opacity: 1; 
+        transform: translate(-50%, -50%) scale(1.3) rotate(-10deg); 
+      }
+      100% { 
+        opacity: 0; 
+        transform: translate(-50%, -80%) scale(0.6) rotate(10deg); 
+      }
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .navbar-container { 
+        padding: 10px 16px; 
+        gap: 10px; 
+        height: 65px;
+      }
+      .nav-btn span { display: none; }
+      .search-wrap { max-width: none; }
+      .welcome-banner { margin-top: 65px; top: 65px; }
+      .main-layout { padding: 24px 16px 80px; }
+      .post-card { 
+        border-radius: 12px; 
+        border-left: 1px solid var(--border); 
+        border-right: 1px solid var(--border); 
+      }
+    }
+
+    @media (max-width: 480px) {
+      .navbar-container {
+        padding: 8px 12px;
+      }
+      .logo-text {
+        font-size: 20px;
+      }
+      .main-layout { padding: 20px 12px 80px; }
+      .post-card {
+        border-radius: 8px;
+        margin: 0 -4px;
+      }
+    }
+
+    .welcome-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .welcome-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .welcome-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome-subtitle {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .welcome-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--primary);
+      border-radius: 50%;
+      color: white;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar">
+    <div class="navbar-container">
+      <a href="#" class="logo" aria-label="Home">
+        <div class="logo-icon">L</div>
+        <span class="logo-text">linksy</span>
+      </a>
+
+      <div class="nav-spacer" aria-hidden="true"></div>
+
+      <form class="search-wrap" role="search" aria-label="Search posts" onsubmit="event.preventDefault()">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2"></line>
+        </svg>
+        <input id="searchInput" class="search-input" type="search" placeholder="Search posts or users..." aria-label="Search" />
+      </form>
+
+      <div class="nav-actions">
+        <button class="nav-btn primary" id="createPostBtn" aria-label="Create post">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          <span>Create</span>
+        </button>
+        <button class="nav-btn" id="profileBtn" aria-label="Profile">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Profile</span>
+        </button>
+        <button class="nav-btn" id="signInBtn" aria-label="Sign In">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <polyline points="10,17 15,12 10,7"></polyline>
+            <line x1="15" y1="12" x2="3" y2="12"></line>
+          </svg>
+          <span>Sign In</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="welcome-banner">
+      <div class="welcome-container">
+        <div class="welcome-content">
+          <h2 class="welcome-title">Posts for you</h2>
+          <p class="welcome-subtitle">Discover amazing content from creators you love</p>
+        </div>
+        <div class="welcome-icon">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7z"></path>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <div class="main-layout">
+      <section aria-label="Feed" class="main-feed">
+        <div id="feed" class="feed" aria-live="polite"></div>
+      </section>
+
+      <aside class="sidebar-container" aria-label="Suggested for you">
+        <section class="suggestions">
+          <div class="suggestions-header">
+            <h3 class="suggestions-title">Suggested for you</h3>
+          </div>
+          <div id="suggestionsList" class="suggestions-list"></div>
+        </section>
+      </aside>
+    </div>
+</main>
+
+  <script>
+    // App State
+    const state = {
+      currentUser: {
+        id: 'current_user',
+        username: 'you',
+        avatar: 'https://picsum.photos/seed/you/64/64',
+      },
+      posts: [
+        {
+          id: 'p1',
+          user: {
+            id: 'u1',
+            username: 'aria',
+            avatar: 'https://picsum.photos/seed/aria/64/64',
+          },
+          image: 'https://picsum.photos/seed/citylights/800/800',
+          caption:
+            "City lights at midnight ✨ There's something magical about the urban glow when the world sleeps.",
+          likes: 1247,
+          liked: false,
+          comments: [
+            { id: 'c1', username: 'mike', text: 'Incredible shot! 🔥' },
+            { id: 'c2', username: 'sarah', text: 'The composition is perfect' },
+          ],
+          timestamp: '2 hours ago',
+        },
+        {
+          id: 'p2',
+          user: {
+            id: 'u2',
+            username: 'noah',
+            avatar: 'https://picsum.photos/seed/noah/64/64',
+          },
+          image: 'https://picsum.photos/seed/workspace/800/800',
+          caption: 'Minimalist workspace setup. Clean desk, clear mind 🧠',
+          likes: 856,
+          liked: true,
+          comments: [{ id: 'c3', username: 'alex', text: 'Goals! Where did you get that desk?' }],
+          timestamp: '5 hours ago',
+        },
+        {
+          id: 'p3',
+          user: {
+            id: 'u3',
+            username: 'luna',
+            avatar: 'https://picsum.photos/seed/luna/64/64',
+          },
+          image: 'https://picsum.photos/seed/mountain/800/800',
+          caption: 'Golden hour at the mountain peak 🏔️ Worth every step of the hike!',
+          likes: 2103,
+          liked: false,
+          comments: [
+            { id: 'c4', username: 'emma', text: 'Breathtaking view! 😍' },
+            { id: 'c5', username: 'james', text: 'Which mountain is this?' },
+            { id: 'c6', username: 'luna', text: '@james Mount Rainier! Highly recommend' },
+          ],
+          timestamp: '1 day ago',
+        },
+        {
+          id: 'p4',
+          user: {
+            id: 'u4',
+            username: 'zoe',
+            avatar: 'https://picsum.photos/seed/zoe/64/64',
+          },
+          image: 'https://picsum.photos/seed/coffee/800/800',
+          caption: 'Perfect morning brew ☕ Starting the day right with some specialty coffee',
+          likes: 432,
+          liked: false,
+          comments: [
+            { id: 'c7', username: 'ryan', text: 'What blend is this?' },
+          ],
+          timestamp: '3 hours ago',
+        },
+        {
+          id: 'p5',
+          user: {
+            id: 'u5',
+            username: 'kai',
+            avatar: 'https://picsum.photos/seed/kai/64/64',
+          },
+          image: 'https://picsum.photos/seed/art/800/800',
+          caption: 'Latest digital artwork 🎨 Experimenting with new color palettes',
+          likes: 789,
+          liked: true,
+          comments: [
+            { id: 'c8', username: 'maya', text: 'This is stunning!' },
+            { id: 'c9', username: 'alex', text: 'Love the color harmony' },
+          ],
+          timestamp: '6 hours ago',
+        },
+        {
+          id: 'p6',
+          user: {
+            id: 'u6',
+            username: 'sage',
+            avatar: 'https://picsum.photos/seed/sage/64/64',
+          },
+          image: 'https://picsum.photos/seed/nature/800/800',
+          caption: 'Peaceful forest walk 🌲 Nature therapy is the best therapy',
+          likes: 1564,
+          liked: false,
+          comments: [
+            { id: 'c10', username: 'nina', text: 'So serene 🍃' },
+            { id: 'c11', username: 'tom', text: 'Where is this trail?' },
+            { id: 'c12', username: 'sage', text: '@tom Pacific Northwest, near Portland' },
+          ],
+          timestamp: '8 hours ago',
+        },
+      ],
+      suggestions: [
+        { id: 's1', username: 'avril', note: 'Popular • Photography', following: false, avatar: 'https://picsum.photos/seed/avril/64/64' },
+        { id: 's2', username: 'bruno', note: 'New to Linksy', following: false, avatar: 'https://picsum.photos/seed/bruno/64/64' },
+        { id: 's3', username: 'cora', note: 'Follows you', following: false, avatar: 'https://picsum.photos/seed/cora/64/64' },
+        { id: 's4', username: 'dylan', note: 'Trending now', following: false, avatar: 'https://picsum.photos/seed/dylan/64/64' },
+        { id: 's5', username: 'elsa', note: 'Suggested', following: false, avatar: 'https://picsum.photos/seed/elsa/64/64' },
+        { id: 's6', username: 'flora', note: 'For you', following: false, avatar: 'https://picsum.photos/seed/flora/64/64' },
+        { id: 's7', username: 'glenn', note: 'Popular • Travel', following: false, avatar: 'https://picsum.photos/seed/glenn/64/64' },
+        { id: 's8', username: 'hana', note: 'Mutual friends', following: false, avatar: 'https://picsum.photos/seed/hana/64/64' },
+      ],
+    };
+
+    // DOM
+    const feedContainer = document.getElementById('feed');
+    const suggestionsList = document.getElementById('suggestionsList');
+    const createPostModal = document.getElementById('createPostModal'); // This is not in the HTML, but keeping for JS logic
+    const createPostForm = document.getElementById('createPostForm'); // This is not in the HTML
+
+    // Render Posts
+    function renderPosts(list = state.posts) {
+      const postsHtml = list
+        .map(
+          (post) => `
+        <article class="post-card" data-post-id="${post.id}">
+          <div class="post-header">
+            <div class="post-user">
+              <img src="${post.user.avatar}" alt="${post.user.username}" class="post-avatar" />
+              <div class="post-user-info">
+                <span class="post-username">${post.user.username}</span>
+                <span class="post-time">${post.timestamp}</span>
+              </div>
+            </div>
+            <button class="post-menu" aria-label="Post menu">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="19" cy="12" r="1"></circle>
+                <circle cx="5" cy="12" r="1"></circle>
+              </svg>
+            </button>
+          </div>
+
+          <img src="${post.image}" alt="Post image from ${post.user.username}" class="post-image" data-post-id="${post.id}" />
+
+          <div class="post-actions">
+            <div class="post-actions-left">
+              <button class="action-btn like-btn ${post.liked ? 'liked' : ''}" data-post-id="${post.id}" aria-label="Like">
+                <svg class="action-icon like-icon" viewBox="0 0 24 24" fill="${post.liked ? 'var(--heart)' : 'none'}" stroke="${post.liked ? 'var(--heart)' : 'currentColor'}">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+              <button class="action-btn comment-btn" data-post-id="${post.id}" aria-label="Comment">
+                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="post-likes">${post.likes.toLocaleString()} likes</div>
+
+          <div class="post-caption">
+            <span class="caption-username">${post.user.username}</span>
+            ${post.caption}
+          </div>
+
+          <div class="post-comments">
+            ${
+              post.comments.length > 2
+                ? `
+              <button class="view-comments" data-post-id="${post.id}">
+                View all ${post.comments.length} comments
+              </button>
+            `
+                : ''
+            }
+            ${post.comments
+              .slice(-2)
+              .map(
+                (comment) => `
+              <div class="comment">
+                <span class="comment-username">${comment.username}</span>
+                ${comment.text}
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+
+          <div class="add-comment">
+            <input type="text" class="comment-input" placeholder="Add a comment..." data-post-id="${post.id}" />
+            <button class="post-comment-btn" data-post-id="${post.id}" disabled>Post</button>
+          </div>
+        </article>
+      `
+        )
+        .join('');
+
+      feedContainer.innerHTML = postsHtml;
+    }
+
+    // Render Suggestions
+    function renderSuggestions() {
+      suggestionsList.innerHTML = state.suggestions
+        .map(
+          (s) => `
+        <div class="suggestion-item" data-sug-id="${s.id}">
+          <div class="sug-user">
+            <img class="sug-avatar" src="${s.avatar}" alt="${s.username}" />
+            <div class="sug-meta">
+              <span class="sug-name">${s.username}</span>
+              <span class="sug-note">${s.note}</span>
+            </div>
+          </div>
+          <button class="follow-btn ${s.following ? 'following' : ''}" aria-pressed="${s.following}" data-sug-id="${s.id}">
+            ${s.following ? 'Following' : 'Follow'}
+          </button>
+        </div>
+      `
+        )
+        .join('');
+    }
+    
+  // Like
+    function handleLike(postId) {
+      const post = state.posts.find((p) => p.id === postId);
+      if (!post) return;
+      post.liked = !post.liked;
+      post.likes += post.liked ? 1 : -1;
+
+      const likeBtn = document.querySelector(`[data-post-id="${postId}"].like-btn`);
+      const likeIcon = likeBtn?.querySelector('.like-icon');
+      const likesCount = document.querySelector(`[data-post-id="${postId}"] .post-likes`);
+
+      likeBtn?.classList.toggle('liked', post.liked);
+      likeIcon?.setAttribute('fill', post.liked ? 'var(--heart)' : 'none');
+      likeIcon?.setAttribute('stroke', post.liked ? 'var(--heart)' : 'currentColor');
+      if (likesCount) likesCount.textContent = `${post.likes.toLocaleString()} likes`;
+
+      if (post.liked && likeBtn) likeBtn.classList.add('liked');
+    }
+
+    // Double tap like
+    function handleDoubleTapLike(postId, event) {
+      const post = state.posts.find((p) => p.id === postId);
+      if (!post) return;
+      if (!post.liked) {
+        post.liked = true;
+        post.likes += 1;
+
+        // Floating heart
+        const heart = document.createElement('div');
+        heart.innerHTML = '❤️';
+        heart.className = 'floating-heart';
+        heart.style.left = event.clientX + 'px';
+        heart.style.top = event.clientY + 'px';
+        document.body.appendChild(heart);
+        setTimeout(() => heart.remove(), 1200);
+
+        // Update UI
+        const likeBtn = document.querySelector(`[data-post-id="${postId}"].like-btn`);
+        const likeIcon = likeBtn?.querySelector('.like-icon');
+        const likesCount = document.querySelector(`[data-post-id="${postId}"] .post-likes`);
+
+        likeBtn?.classList.add('liked');
+        likeIcon?.setAttribute('fill', 'var(--heart)');
+        likeIcon?.setAttribute('stroke', 'var(--heart)');
+        if (likesCount) likesCount.textContent = `${post.likes.toLocaleString()} likes`;
+      }
+    }
+
+    // Comment input
+    function handleCommentInput(postId, input) {
+      const postBtn = document.querySelector(`[data-post-id="${postId}"].post-comment-btn`);
+      const hasText = input.value.trim().length > 0;
+      if (!postBtn) return;
+      postBtn.disabled = !hasText;
+      postBtn.classList.toggle('active', hasText);
+    }
+
+    // Add comment
+    function addComment(postId, text) {
+      const post = state.posts.find((p) => p.id === postId);
+      if (!post) return;
+      const newComment = {
+        id: `c${Date.now()}`,
+        username: state.currentUser.username,
+        text: text.trim(),
+      };
+      post.comments.push(newComment);
+
+      // Replace single post
+      const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+      const postIndex = state.posts.findIndex((p) => p.id === postId);
+      postElement?.insertAdjacentHTML('afterend', renderSinglePost(state.posts[postIndex]));
+      postElement?.remove();
+    }
+
+    // Render single post
+    function renderSinglePost(post) {
+      return `
+        <article class="post-card" data-post-id="${post.id}">
+          <div class="post-header">
+            <div class="post-user">
+              <img src="${post.user.avatar}" alt="${post.user.username}" class="post-avatar" />
+              <div class="post-user-info">
+                <span class="post-username">${post.user.username}</span>
+                <span class="post-time">${post.timestamp}</span>
+              </div>
+            </div>
+            <button class="post-menu" aria-label="Post menu">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <circle cx="12" cy="12" r="1"></circle>
+                <circle cx="19" cy="12" r="1"></circle>
+                <circle cx="5" cy="12" r="1"></circle>
+              </svg>
+            </button>
+          </div>
+
+          <img src="${post.image}" alt="Post image from ${post.user.username}" class="post-image" data-post-id="${post.id}" />
+
+          <div class="post-actions">
+            <div class="post-actions-left">
+              <button class="action-btn like-btn ${post.liked ? 'liked' : ''}" data-post-id="${post.id}" aria-label="Like">
+                <svg class="action-icon like-icon" viewBox="0 0 24 24" fill="${post.liked ? 'var(--heart)' : 'none'}" stroke="${post.liked ? 'var(--heart)' : 'currentColor'}">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </button>
+              <button class="action-btn comment-btn" data-post-id="${post.id}" aria-label="Comment">
+                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="post-likes">${post.likes.toLocaleString()} likes</div>
+
+          <div class="post-caption">
+            <span class="caption-username">${post.user.username}</span>
+            ${post.caption}
+          </div>
+
+          <div class="post-comments">
+            ${
+              post.comments.length > 2
+                ? `
+              <button class="view-comments" data-post-id="${post.id}">
+                View all ${post.comments.length} comments
+              </button>
+            `
+                : ''
+            }
+            ${post.comments
+              .slice(-2)
+              .map(
+                (comment) => `
+              <div class="comment">
+                <span class="comment-username">${comment.username}</span>
+                ${comment.text}
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+
+          <div class="add-comment">
+            <input type="text" class="comment-input" placeholder="Add a comment..." data-post-id="${post.id}" />
+            <button class="post-comment-btn" data-post-id="${post.id}" disabled>Post</button>
+          </div>
+        </article>
+      `;
+    }
+
+    // Create New Post
+    function createPost(imageUrl, caption) {
+      const newPost = {
+        id: `p${Date.now()}`,
+        user: { id: state.currentUser.id, username: state.currentUser.username, avatar: state.currentUser.avatar },
+        image:
+          imageUrl ||
+          'data:image/svg+xml,%3Csvg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="600" height="600" fill="%23262626"/%3E%3Ctext x="300" y="300" text-anchor="middle" fill="%23737373" font-size="20"%3ENo image provided%3C/text%3E%3C/svg%3E',
+        caption: caption || 'Shared a moment ✨',
+        likes: 0,
+        liked: false,
+        comments: [],
+        timestamp: 'now',
+      };
+
+      state.posts.unshift(newPost);
+      renderPosts();
+      
+      // Smooth scroll to top of feed
+      const feedContainer = document.querySelector('.feed-container');
+      if (feedContainer) {
+        feedContainer.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    }
+
+    // Suggestions: follow toggle
+    function toggleFollow(id) {
+      const s = state.suggestions.find((x) => x.id === id);
+      if (!s) return;
+      s.following = !s.following;
+      renderSuggestions();
+    }
+
+    // Search posts by caption or username
+    function handleSearch(query) {
+      const q = query.trim().toLowerCase();
+      if (!q) {
+        renderPosts();
+        return;
+      }
+      const filtered = state.posts.filter(
+        (p) =>
+          p.user.username.toLowerCase().includes(q) ||
+          p.caption.toLowerCase().includes(q)
+      );
+      renderPosts(filtered);
+    }
+
+    // Events
+    document.addEventListener('DOMContentLoaded', () => {
+      renderPosts();
+      renderSuggestions();
+    });
+
+    // Modal controls
+    document.getElementById('createPostBtn').addEventListener('click', () => {
+      createPostModal.classList.add('active');
+      createPostModal.setAttribute('aria-hidden', 'false');
+      document.body.style.overflow = 'hidden'; // Prevent background scroll
+    });
+
+    const closeModalFunction = () => {
+      createPostModal.classList.remove('active');
+      createPostForm.reset();
+      createPostModal.setAttribute('aria-hidden', 'true');
+      document.body.style.overflow = 'auto'; // Restore scroll
+    };
+
+    document.getElementById('closeModal').addEventListener('click', closeModalFunction);
+    document.getElementById('cancelPost').addEventListener('click', closeModalFunction);
+    
+    createPostModal.addEventListener('click', (e) => {
+      if (e.target === createPostModal) {
+        closeModalFunction();
+      }
+    });
+
+    // Form submission
+    createPostForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const imageUrl = document.getElementById('imageUrl').value.trim();
+      const caption = document.getElementById('caption').value.trim();
+      createPost(imageUrl, caption);
+      closeModalFunction();
+    });
+
+    // Feed interactions
+    document.addEventListener('click', (e) => {
+      // Like
+      if (e.target.closest('.like-btn')) {
+        const postId = e.target.closest('.like-btn').getAttribute('data-post-id');
+        handleLike(postId);
+      }
+      // Comment focus
+      if (e.target.closest('.comment-btn')) {
+        const postId = e.target.closest('.comment-btn').getAttribute('data-post-id');
+        const input = document.querySelector(`[data-post-id="${postId}"].comment-input`);
+        input?.focus();
+      }
+      // Post comment
+      if (e.target.closest('.post-comment-btn')) {
+        const postId = e.target.closest('.post-comment-btn').getAttribute('data-post-id');
+        const input = document.querySelector(`[data-post-id="${postId}"].comment-input`);
+        const text = input?.value.trim();
+        if (text) {
+          addComment(postId, text);
+          input.value = '';
+          input.dispatchEvent(new Event('input'));
+        }
+      }
+      // View all comments
+      if (e.target.closest('.view-comments')) {
+        const postId = e.target.closest('.view-comments').getAttribute('data-post-id');
+        const post = state.posts.find((p) => p.id === postId);
+        const commentsContainer = e.target.closest('.post-comments');
+        if (post && commentsContainer) {
+          commentsContainer.innerHTML = post.comments
+            .map(
+              (comment) => `
+              <div class="comment">
+                <span class="comment-username">${comment.username}</span>
+                ${comment.text}
+              </div>
+            `
+            )
+            .join('');
+        }
+      }
+      // Suggestions follow
+      if (e.target.closest('.follow-btn')) {
+        const id = e.target.closest('.follow-btn').getAttribute('data-sug-id');
+        toggleFollow(id);
+      }
+    });
+
+    // Double tap like on image (click double within 300ms)
+    let tapTimeout;
+    document.addEventListener('click', (e) => {
+      if (e.target.classList.contains('post-image')) {
+        if (tapTimeout) {
+          clearTimeout(tapTimeout);
+          tapTimeout = null;
+          const postId = e.target.getAttribute('data-post-id');
+          handleDoubleTapLike(postId, e);
+        } else {
+          tapTimeout = setTimeout(() => {
+            tapTimeout = null;
+          }, 300);
+        }
+      }
+    });
+
+    // Comment input handling
+    document.addEventListener('input', (e) => {
+      if (e.target.classList.contains('comment-input')) {
+        const postId = e.target.getAttribute('data-post-id');
+        handleCommentInput(postId, e.target);
+      }
+    });
+
+    // Enter to post comment
+    document.addEventListener('keypress', (e) => {
+      if (e.target.classList.contains('comment-input') && e.key === 'Enter') {
+        e.preventDefault();
+        const postId = e.target.getAttribute('data-post-id');
+        const text = e.target.value.trim();
+        if (text) {
+          addComment(postId, text);
+          e.target.value = '';
+          e.target.dispatchEvent(new Event('input'));
+        }
+      }
+    });
+
+    // Escape key to close modal
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && createPostModal.classList.contains('active')) {
+        closeModalFunction();
+      }
+    });
+
+    // Navbar buttons placeholders
+    document.getElementById('profileBtn').addEventListener('click', () => {
+      alert('Profile page coming soon! 👤');
+    });
+    document.getElementById('signInBtn').addEventListener('click', () => {
+      alert('Sign in functionality coming soon! 🔐');
+    });
+
+    // Search
+    searchInput.addEventListener('input', (e) => handleSearch(e.target.value));
+
+    // Add some loading animation for better UX
+    document.addEventListener('DOMContentLoaded', () => {
+      // Add a slight delay to simulate loading
+      setTimeout(() => {
+        document.body.style.opacity = '1';
+      }, 100);
+    });
+
+  </script>
+</body>
+</html>
