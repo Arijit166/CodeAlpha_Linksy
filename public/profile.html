@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Profile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        /* --- Main container for the two-column layout --- */
+        .profile-layout {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px;
+            display: grid;
+            grid-template-columns: 1fr; /* Default to single column for mobile */
+            gap: 32px;
+        }
+        
+        .profile-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .profile-avatar-container {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #3a3a3a;
+        }
+
+        .avatar-overlay {
+            position: absolute;
+            top: 0; left: 0; width: 80px; height: 80px; border-radius: 50%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0;
+            transition: opacity 0.2s;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .profile-avatar-container:hover .avatar-overlay {
+            opacity: 1;
+        }
+
+        .hidden-file-input {
+            display: none;
+        }
+
+        .profile-info {
+            margin-bottom: 20px;
+        }
+
+        .editable-field {
+            position: relative;
+            margin-bottom: 16px;
+        }
+
+        .field-display {
+            padding: 4px 0;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        
+        .inline-edit-btn {
+            background: none;
+            border: 1px solid #3a3a3a;
+            color: #b3b3b3;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .inline-edit-btn:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .field-input {
+            display: none; background: #2a2a2a; border: 1px solid #3a3a3a;
+            color: #ffffff; padding: 8px 12px; border-radius: 8px;
+            font-size: inherit; width: 100%;
+        }
+        .field-input:focus { outline: none; border-color: #1da1f2; }
+        .profile-name { font-size: 24px; font-weight: 700; line-height: 1.2;}
+        .username { color: #8a8a8a; font-size: 15px; }
+        .bio { font-size: 15px; line-height: 1.5; min-height: 20px; white-space: pre-wrap;}
+        .location { color: #8a8a8a; font-size: 15px; display: flex; align-items: center; gap: 4px; }
+
+        .stats {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .stat { color: #8a8a8a; font-size: 15px; }
+        .stat strong { color: #ffffff; font-weight: 700; }
+
+        .editing .field-display { display: none; }
+        .editing .field-input { display: block; }
+        .field-actions { display: none; gap: 8px; margin-top: 8px; }
+        .editing .field-actions { display: flex; }
+        .field-button { padding: 4px 12px; border: 1px solid #3a3a3a; background: #2a2a2a; color: #ffffff; border-radius: 16px; font-size: 12px; cursor: pointer; }
+        .save-button { background: #1da1f2; border-color: #1da1f2; }
+
+        .tabs {
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+        }
+
+        .tab {
+            padding: 16px 0;
+            margin-right: 24px;
+            color: #ffffff;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .tab.active::after {
+            content: ''; position: absolute; bottom: -1px; left: 0;
+            width: 100%; height: 2px; background: #1da1f2;
+        }
+
+        .posts-container {
+            min-height: 400px;
+            padding-top: 24px;
+        }
+
+        .post {
+            border-bottom: 1px solid #2a2a2a;
+            padding-bottom: 16px;
+            margin-bottom: 16px;
+        }
+        .post:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .post-header {
+            display: flex; align-items: flex-start; gap: 12px;
+            margin-bottom: 12px;
+        }
+        .post-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
+        .post-info { flex: 1; }
+        .post-user { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+        .post-name { font-weight: 700; font-size: 15px; }
+        .post-time { color: #8a8a8a; font-size: 15px; }
+        .post-content { font-size: 15px; line-height: 1.4; margin-bottom: 12px; }
+        .post-image { width: 100%; border-radius: 16px; margin-bottom: 12px; max-height: 500px; object-fit: cover; }
+        .post-actions { display: flex; justify-content: space-between; max-width: 400px; color: #8a8a8a; }
+        .post-action { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .post-action svg { width: 18px; height: 18px; }
+        .more-button { background: none; border: none; color: #8a8a8a; cursor: pointer; }
+        
+        /* --- Desktop and large screen styles --- */
+        @media (min-width: 992px) {
+            .profile-layout {
+                grid-template-columns: 320px 1fr;
+            }
+
+            .profile-sidebar {
+                position: sticky;
+                top: 24px; 
+                align-self: start;
+            }
+            
+            .profile-main-content {
+                border-left: 1px solid #2a2a2a;
+                padding-left: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="profile-layout">
+        
+        <div class="profile-sidebar">
+            <div class="profile-header">
+                <div class="profile-avatar-container" id="avatarContainer">
+                    <img src="https://images.unsplash.com/photo-1494790108755-2616c9ca8a66?w=150&h=150&fit=crop&crop=face" alt="Profile" class="profile-avatar" id="profileAvatar">
+                    <div class="avatar-overlay">
+                        <span>Change Photo</span>
+                    </div>
+                    <input type="file" id="avatarInput" class="hidden-file-input" accept="image/*">
+                </div>
+            </div>
+
+            <div class="profile-info">
+                <div class="editable-field" id="nameField">
+                    <div class="field-display">
+                        <div>
+                            <h2 class="profile-name" id="displayName">Aria Thompson</h2>
+                        </div>
+                        <button class="inline-edit-btn" onclick="editField('name')">Edit</button>
+                    </div>
+                    <input type="text" class="field-input" id="nameInput" value="Aria Thompson">
+                    <div class="field-actions">
+                        <button class="field-button save-button" onclick="saveField('name')">Save</button>
+                        <button class="field-button" onclick="cancelEdit('name')">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="editable-field" id="bioField">
+                    <div class="field-display">
+                        <div class="bio" id="displayBio">Capturing moments through my lens 📸 | Nature enthusiast | Coffee lover ☕</div>
+                        <button class="inline-edit-btn" onclick="editField('bio')">Edit</button>
+                    </div>
+                    <textarea class="field-input" id="bioInput" rows="3" style="resize: vertical; min-height: 60px;">Capturing moments through my lens 📸 | Nature enthusiast | Coffee lover ☕</textarea>
+                    <div class="field-actions">
+                        <button class="field-button save-button" onclick="saveField('bio')">Save</button>
+                        <button class="field-button" onclick="cancelEdit('bio')">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="editable-field" id="locationField">
+                    <div class="field-display">
+                        <div class="location" id="displayLocation">📍 Seattle, WA</div>
+                        <button class="inline-edit-btn" onclick="editField('location')">Edit</button>
+                    </div>
+                    <input type="text" class="field-input" id="locationInput" value="Seattle, WA" placeholder="Enter location">
+                    <div class="field-actions">
+                        <button class="field-button save-button" onclick="saveField('location')">Save</button>
+                        <button class="field-button" onclick="cancelEdit('location')">Cancel</button>
+                    </div>
+                </div>
+                
+                <div class="stats">
+                    <div class="stat"><strong>1,247</strong> Following</div>
+                    <div class="stat"><strong>3,892</strong> Followers</div>
+                    <div class="stat"><strong>2</strong> Posts</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-main-content">
+            <div class="tabs">
+                <div class="tab active">Posts</div>
+            </div>
+
+            <div class="posts-container">
+                <div class="post">
+                    <div class="post-header">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616c9ca8a66?w=80&h=80&fit=crop&crop=face" alt="aria" class="post-avatar" id="postAvatar1">
+                        <div class="post-info">
+                            <div class="post-user">
+                                <span class="post-name" id="postName1">Aria Thompson</span>
+                                <span class="post-time"> • 2 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        Caught this incredible misty morning in the hills today. There's something magical about the way fog rolls over the landscape, creating layers of depth and mystery. Sometimes the best shots happen when you least expect them. 🌫️
+                    </div>
+                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop" alt="Misty landscape" class="post-image">
+                </div>
+
+                <div class="post">
+                    <div class="post-header">
+                        <img src="https://images.unsplash.com/photo-1494790108755-2616c9ca8a66?w=80&h=80&fit=crop&crop=face" alt="aria" class="post-avatar" id="postAvatar2">
+                        <div class="post-info">
+                            <div class="post-user">
+                                <span class="post-name" id="postName2">Aria Thompson</span>
+                                <span class="post-time"> • 1 day ago</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="post-content">
+                        Golden hour at the local coffee shop. Nothing beats that perfect lighting streaming through the windows while working on photo edits. ☕✨
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('avatarContainer').addEventListener('click', () => {
+            document.getElementById('avatarInput').click();
+        });
+
+        document.getElementById('avatarInput').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const newImageUrl = e.target.result;
+                    document.getElementById('profileAvatar').src = newImageUrl;
+                    document.getElementById('postAvatar1').src = newImageUrl;
+                    document.getElementById('postAvatar2').src = newImageUrl;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        function editField(fieldType) {
+            const field = document.getElementById(fieldType + 'Field');
+            field.classList.add('editing');
+            const input = document.getElementById(fieldType + 'Input');
+            input.focus();
+        }
+
+        function saveField(fieldType) {
+            const field = document.getElementById(fieldType + 'Field');
+            const input = document.getElementById(fieldType + 'Input');
+            const display = document.getElementById('display' + fieldType.charAt(0).toUpperCase() + fieldType.slice(1));
+            
+            let newValue = input.value.trim();
+            
+            if (fieldType === 'location' && newValue && !newValue.startsWith('📍')) {
+                newValue = '📍 ' + newValue;
+            }
+            
+            if (newValue) {
+                display.textContent = newValue;
+                
+                if (fieldType === 'name') {
+                    document.getElementById('postName1').textContent = newValue;
+                    document.getElementById('postName2').textContent = newValue;
+                }
+            }
+            
+            field.classList.remove('editing');
+        }
+
+        function cancelEdit(fieldType) {
+            const field = document.getElementById(fieldType + 'Field');
+            const input = document.getElementById(fieldType + 'Input');
+            const display = document.getElementById('display' + fieldType.charAt(0).toUpperCase() + fieldType.slice(1));
+            
+            if (fieldType === 'location') {
+                input.value = display.textContent.replace('📍 ', '');
+            } else {
+                input.value = display.textContent;
+            }
+            
+            field.classList.remove('editing');
+        }
+
+        document.addEventListener('keydown', (e) => {
+            const activeField = document.querySelector('.editable-field.editing');
+            if (activeField) {
+                const fieldType = activeField.id.replace('Field', '');
+                if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+                    e.preventDefault();
+                    saveField(fieldType);
+                } else if (e.key === 'Escape') {
+                    cancelEdit(fieldType);
+                }
+            }
+        });
+    </script>
+</body>
+</html>
