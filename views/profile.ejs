@@ -197,6 +197,112 @@
                 padding-left: 32px;
             }
         }
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 16px;
+            width: 90%;
+            max-width: 400px;
+            max-height: 600px;
+            overflow: hidden;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .close-modal {
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #8a8a8a;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #ffffff;
+        }
+
+        .modal-body {
+            padding: 0;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            border-bottom: 1px solid #2a2a2a;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .user-item:hover {
+            background-color: #2a2a2a;
+        }
+
+        .user-item:last-child {
+            border-bottom: none;
+        }
+
+        .user-item-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-right: 12px;
+        }
+
+        .user-item-info {
+            flex: 1;
+        }
+
+        .user-item-name {
+            font-weight: 700;
+            font-size: 15px;
+            margin-bottom: 2px;
+        }
+
+        .user-item-username {
+            color: #8a8a8a;
+            font-size: 14px;
+        }
+
+        .modal-loading {
+            text-align: center;
+            padding: 40px;
+            color: #8a8a8a;
+        }
+
+        .modal-empty {
+            text-align: center;
+            padding: 40px;
+            color: #8a8a8a;
+        }
     </style>
 </head>
 <body>
@@ -252,9 +358,14 @@
                     </div>
                 </div>
                 
+                <!-- Replace the existing stats div with this -->
                 <div class="stats">
-                    <div class="stat"><strong><%= user.following.length %></strong> Following</div>
-                    <div class="stat"><strong><%= user.followers.length %></strong> Followers</div>
+                    <div class="stat" style="cursor: pointer;" onclick="showFollowModal('following', '<%= user._id %>')">
+                        <strong><%= user.following.length %></strong> Following
+                    </div>
+                    <div class="stat" style="cursor: pointer;" onclick="showFollowModal('followers', '<%= user._id %>')">
+                        <strong><%= user.followers.length %></strong> Followers
+                    </div>
                     <div class="stat"><strong><%= posts.length %></strong> Posts</div>
                 </div>
             </div>
@@ -291,6 +402,17 @@
                         </div>
                     <% }) %>
                 <% } %>
+            </div>
+        </div>
+    </div>
+    <div id="followModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalTitle">Followers</h3>
+                <span class="close-modal" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- User list will be populated here -->
             </div>
         </div>
     </div>
@@ -421,6 +543,60 @@
                 }
             }
         });
+        async function showFollowModal(type, userId) {
+        const modal = document.getElementById('followModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        
+        modalTitle.textContent = type === 'followers' ? 'Followers' : 'Following';
+        modalBody.innerHTML = '<div class="modal-loading">Loading...</div>';
+        modal.style.display = 'flex';
+        
+        try {
+            const response = await fetch(`/users/${userId}/${type}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.users.length === 0) {
+                    modalBody.innerHTML = `<div class="modal-empty">No ${type} yet</div>`;
+                } else {
+                    modalBody.innerHTML = data.users.map(user => `
+                        <div class="user-item" onclick="window.location.href='/users/${user.username}'">
+                            <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
+                                alt="${user.name}" class="user-item-avatar">
+                            <div class="user-item-info">
+                                <div class="user-item-name">${user.name}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                modalBody.innerHTML = '<div class="modal-empty">Failed to load users</div>';
+            }
+        } catch (error) {
+            console.error('Error loading users:', error);
+            modalBody.innerHTML = '<div class="modal-empty">Error loading users</div>';
+        }
+    }
+
+    function closeModal() {
+        document.getElementById('followModal').style.display = 'none';
+    }
+
+    // Close modal when clicking outside of it
+    window.addEventListener('click', function(event) {
+        const modal = document.getElementById('followModal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            closeModal();
+        }
+    });
     </script>
 </body>
 </html>
