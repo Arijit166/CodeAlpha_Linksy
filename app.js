@@ -231,6 +231,67 @@ app.get('/create-post', requireAuth, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+// Add this route to your main server file (after your existing routes)
+
+// Search route
+app.get('/api/search', requireAuth, async (req, res) => {
+  try {
+    const { q } = req.query;
+    
+    if (!q || q.trim().length < 1) {
+      return res.json({ users: [] });
+    }
+    
+    const searchTerm = q.trim();
+    
+    // Search for users by username or name (case-insensitive)
+    const users = await User.find({
+      $or: [
+        { username: { $regex: searchTerm, $options: 'i' } },
+        { name: { $regex: searchTerm, $options: 'i' } }
+      ],
+      _id: { $ne: req.session.userId } // Exclude current user
+    })
+    .select('username name avatar bio')
+    .limit(10);
+    
+    res.json({ users });
+  } catch (error) {
+    console.error('Search error:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// User profile route (if not already exists)
+app.get('/user/:username', requireAuth, async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username }).select('-password');
+    
+    if (!user) {
+      return res.status(404).send('User not found');
+    }
+    
+    const posts = await Post.find({ user: user._id })
+      .populate('user', 'name username avatar')
+      .sort({ createdAt: -1 });
+    
+    const currentUser = await User.findById(req.session.userId).select('-password');
+    const isFollowing = currentUser.following.includes(user._id);
+    
+    res.render('user-profile', { 
+      profileUser: user,
+      currentUser,
+      isFollowing,
+      posts: posts.map(post => ({
+        ...post.toObject(),
+        timestamp: formatTimestamp(post.createdAt)
+      }))
+    });
+  } catch (error) {
+    console.error('Error loading user profile:', error);
+    res.status(500).send('Server error');
+  }
+});
 
 app.post('/create-post', requireAuth, async (req, res) => {
   try {

@@ -243,6 +243,90 @@
         margin: 0 -4px;
       }
     }
+    .search-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1001;
+      display: none;
+      margin-top: 4px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .search-dropdown.active {
+      display: block;
+    }
+
+    .search-result {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: background 0.2s ease;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .search-result:hover {
+      background: var(--surface-hover);
+    }
+
+    .search-result-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border);
+    }
+
+    .search-result-info {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .search-result-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .search-result-username {
+      font-size: 12px;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .search-no-results {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .search-loading {
+      padding: 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* Make search wrapper relative for dropdown positioning */
+    .search-wrap {
+      position: relative;
+}
     </style>
 </head>
 <body>
@@ -260,7 +344,8 @@
           <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2"></line>
         </svg>
-        <input id="searchInput" class="search-input" type="search" placeholder="Search posts or users..." aria-label="Search" />
+        <input id="searchInput" class="search-input" type="search" placeholder="Search users..." aria-label="Search" autocomplete="off" />
+        <div id="searchDropdown" class="search-dropdown"></div>
       </form>
 
       <div class="nav-actions">
@@ -314,9 +399,6 @@
 </body>
 <script>
 
-    // Search
-    searchInput.addEventListener('input', (e) => handleSearch(e.target.value));
-
     // Add some loading animation for better UX
     document.addEventListener('DOMContentLoaded', () => {
       // Add a slight delay to simulate loading
@@ -324,5 +406,224 @@
         document.body.style.opacity = '1';
       }, 100);
     });
+
+    // Search functionality
+    let searchTimeout;
+    const searchInput = document.getElementById('searchInput');
+    const searchDropdown = document.getElementById('searchDropdown');
+
+    // Search function
+    async function performSearch(query) {
+      if (!query || query.trim().length === 0) {
+        hideSearchDropdown();
+        return;
+      }
+
+      try {
+        showSearchLoading();
+        
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query.trim())}`);
+        const data = await response.json();
+        
+        if (data.error) {
+          showSearchError();
+          return;
+        }
+        
+        displaySearchResults(data.users);
+      } catch (error) {
+        console.error('Search error:', error);
+        showSearchError();
+      }
+    }
+
+    // Display search results
+    function displaySearchResults(users) {
+      if (users.length === 0) {
+        searchDropdown.innerHTML = '<div class="search-no-results">No users found</div>';
+      } else {
+        searchDropdown.innerHTML = users.map(user => `
+          <a href="/user/${user.username}" class="search-result">
+            <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/64/64'}" 
+                alt="${user.username}" 
+                class="search-result-avatar" />
+            <div class="search-result-info">
+              <div class="search-result-name">${user.name}</div>
+            </div>
+          </a>
+        `).join('');
+      }
+      
+      showSearchDropdown();
+    }
+
+    // Show loading state
+    function showSearchLoading() {
+      searchDropdown.innerHTML = '<div class="search-loading">Searching...</div>';
+      showSearchDropdown();
+    }
+
+    // Show error state
+    function showSearchError() {
+      searchDropdown.innerHTML = '<div class="search-no-results">Search failed. Please try again.</div>';
+      showSearchDropdown();
+    }
+
+    // Show dropdown
+    function showSearchDropdown() {
+      searchDropdown.classList.add('active');
+    }
+
+    // Hide dropdown
+    function hideSearchDropdown() {
+      searchDropdown.classList.remove('active');
+    }
+
+    // Search input event listener
+    searchInput.addEventListener('input', (e) => {
+      const query = e.target.value;
+      
+      // Clear previous timeout
+      if (searchTimeout) {
+        clearTimeout(searchTimeout);
+      }
+      
+      // Debounce search - wait 300ms after user stops typing
+      searchTimeout = setTimeout(() => {
+        performSearch(query);
+      }, 300);
+    });
+
+    // Hide dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.search-wrap')) {
+        hideSearchDropdown();
+      }
+    });
+
+    // Hide dropdown when pressing escape
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        hideSearchDropdown();
+        searchInput.blur();
+      }
+    });
+
+    // Handle search result clicks
+    searchDropdown.addEventListener('click', (e) => {
+      if (e.target.closest('.search-result')) {
+        hideSearchDropdown();
+        searchInput.value = '';
+      }
+    });
+
+    // Add this function to handle sign out confirmation
+    function showSignOutConfirmation() {
+        // Create confirmation modal container
+        const confirmationModal = document.createElement('div');
+        confirmationModal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #111111;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 32px 24px;
+            text-align: center;
+            z-index: 1000;
+            min-width: 320px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        `;
+        
+        confirmationModal.innerHTML = `
+            <div style="color: #ff6b6b; font-size: 24px; margin-bottom: 16px;">⚠️</div>
+            <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px; font-weight: 600;">Sign Out</h3>
+            <p style="color: #8a8a8a; font-size: 14px; margin-bottom: 24px; line-height: 1.4;">Are you sure you want to log out of your account?</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="cancelSignOut" style="
+                    background: none;
+                    border: 1px solid #3a3a3a;
+                    color: #ffffff;
+                    padding: 10px 20px;
+                    border-radius: 20px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">Cancel</button>
+                <button id="confirmSignOut" style="
+                    background: #ff6b6b;
+                    border: 2px solid #ff6b6b;
+                    color: #ffffff;
+                    padding: 10px 20px;
+                    border-radius: 20px;
+                    font-size: 14px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.2s;
+                ">Sign Out</button>
+            </div>
+        `;
+        
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+        `;
+        
+        // Add to page
+        document.body.appendChild(overlay);
+        document.body.appendChild(confirmationModal);
+        
+        // Get buttons
+        const cancelBtn = document.getElementById('cancelSignOut');
+        const confirmBtn = document.getElementById('confirmSignOut');
+        
+        // Clean up function
+        const cleanup = () => {
+            document.body.removeChild(overlay);
+            document.body.removeChild(confirmationModal);
+        };
+        
+        // Handle cancel
+        cancelBtn.addEventListener('click', cleanup);
+        overlay.addEventListener('click', cleanup);
+        
+        // Handle confirm sign out
+        confirmBtn.addEventListener('click', async () => {
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Signing out...';
+            
+            try {
+                const response = await fetch('/signout', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Sign out failed. Please try again.');
+                    cleanup();
+                }
+            } catch (error) {
+                console.error('Sign out error:', error);
+                alert('An error occurred. Please try again.');
+                cleanup();
+            }
+        });
+    }
+    // Add event listener for the sign out button
+   document.getElementById("signOutBtn").addEventListener("click", showSignOutConfirmation);
+</script>
 </script>
 </html>
