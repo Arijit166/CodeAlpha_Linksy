@@ -5,6 +5,8 @@ const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const path = require('path');
 require('dotenv').config();
+const User = require('./models/user');
+const Post = require('./models/post');
 
 const app = express();
 
@@ -16,37 +18,6 @@ mongoose.connect(process.env.DATABASE_URL, {
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 
-// User Schema
-const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  username: { type: String, required: true, unique: true },
-  bio: { type: String, default: '' },
-  location: { type: String, default: '' },
-  avatar: { type: String, default: 'https://images.unsplash.com/photo-1494790108755-2616c9ca8a66?w=150&h=150&fit=crop&crop=face' },
-  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  createdAt: { type: Date, default: Date.now }
-});
-
-const User = mongoose.model('User', userSchema);
-
-// Post Schema
-const postSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  caption: { type: String, required: true },
-  image: { type: String },
-  likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  comments: [{
-    user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    text: { type: String, required: true },
-    createdAt: { type: Date, default: Date.now }
-  }],
-  createdAt: { type: Date, default: Date.now }
-});
-
-const Post = mongoose.model('Post', postSchema);
 
 // Middleware
 app.use(express.json());
@@ -235,6 +206,17 @@ app.post('/profile/update', requireAuth, async (req, res) => {
     res.json({ success: true });
   } catch (error) {
     console.error('Error updating profile:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+// Add this route after your existing profile routes
+app.post('/profile/avatar', requireAuth, async (req, res) => {
+  try {
+    const { avatar } = req.body;
+    await User.findByIdAndUpdate(req.session.userId, { avatar });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error updating avatar:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });

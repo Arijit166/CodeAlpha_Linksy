@@ -300,15 +300,41 @@
             document.getElementById('avatarInput').click();
         });
 
-        document.getElementById('avatarInput').addEventListener('change', (e) => {
+
+        // Replace the avatar upload functionality in profile.ejs script section with this:
+        document.getElementById('avatarInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
             if (file) {
                 const reader = new FileReader();
-                reader.onload = (e) => {
+                reader.onload = async (e) => {
                     const newImageUrl = e.target.result;
-                    document.getElementById('profileAvatar').src = newImageUrl;
-                    document.getElementById('postAvatar1').src = newImageUrl;
-                    document.getElementById('postAvatar2').src = newImageUrl;
+                    
+                    try {
+                        const response = await fetch('/profile/avatar', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                avatar: newImageUrl
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            document.getElementById('profileAvatar').src = newImageUrl;
+                            // Update all post avatars on the page
+                            document.querySelectorAll('.post-avatar').forEach(el => {
+                                el.src = newImageUrl;
+                            });
+                        } else {
+                            alert('Failed to update avatar');
+                        }
+                    } catch (error) {
+                        console.error('Avatar update error:', error);
+                        alert('An error occurred. Please try again.');
+                    }
                 };
                 reader.readAsDataURL(file);
             }
