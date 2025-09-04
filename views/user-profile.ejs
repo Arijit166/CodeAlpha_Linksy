@@ -376,7 +376,10 @@
 
             <div class="profile-info">
                 <div class="profile-actions">
-                    <h1 class="profile-username"><%= profileUser.name %></h1>
+                    <div>
+                        <h1 class="profile-username"><%= profileUser.name %></h1>
+                        <div class="username">@<%= profileUser.username %></div>
+                    </div>
                     <% if (profileUser._id.toString() !== currentUser._id.toString()) { %>
                         <button class="follow-btn <%= isFollowing ? 'following' : '' %>" 
                                 id="followBtn" 
@@ -527,6 +530,7 @@
                                 alt="${user.name}" class="user-item-avatar">
                             <div class="user-item-info">
                                 <div class="user-item-name">${user.name}</div>
+                                <div class="user-item-username">@${user.username}</div>
                             </div>
                         </div>
                     `).join('');

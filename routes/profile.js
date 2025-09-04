@@ -29,16 +29,50 @@ router.get('/profile', requireAuth, async (req, res) => {
 
 router.post('/profile/update', requireAuth, async (req, res) => {
   try {
-    const { name, bio, location } = req.body;
-    await User.findByIdAndUpdate(req.session.userId, {
-      name,
-      bio,
-      location: location.replace('📍 ', '')
+    const { name, username, bio, location } = req.body;
+    
+    // Validation
+    if (!name || !username) {
+      return res.json({ success: false, error: 'Name and username are required' });
+    }
+    
+    // Clean the username (remove @ if present)
+    const cleanUsername = username.replace('@', '').toLowerCase().trim();
+    
+    // Check if username is already taken by another user
+    const existingUser = await User.findOne({ 
+      username: cleanUsername, 
+      _id: { $ne: req.session.userId } 
     });
-    res.json({ success: true });
+    
+    if (existingUser) {
+      return res.json({ success: false, error: 'Username already taken' });
+    }
+    
+    // Clean location (remove 📍 if present)
+    const cleanLocation = location ? location.replace('📍 ', '').trim() : '';
+    
+    // Update user in database
+    const updatedUser = await User.findByIdAndUpdate(
+      req.session.userId,
+      {
+        name: name.trim(),
+        username: cleanUsername,
+        bio: bio ? bio.trim() : '',
+        location: cleanLocation
+      },
+      { new: true }
+    );
+    
+    if (!updatedUser) {
+      return res.json({ success: false, error: 'User not found' });
+    }
+    
+    res.json({ success: true, user: updatedUser });
+    
   } catch (error) {
     console.error('Error updating profile:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.json({ success: false, error: 'Server error: ' + error.message });
   }
 });
 

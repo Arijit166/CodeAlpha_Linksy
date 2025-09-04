@@ -334,6 +334,18 @@
                     </div>
                 </div>
                 
+                <div class="editable-field" id="usernameField">
+                    <div class="field-display">
+                        <div class="username" id="displayUsername">@<%= user.username %></div>
+                        <button class="inline-edit-btn" onclick="editField('username')">Edit</button>
+                    </div>
+                    <input type="text" class="field-input" id="usernameInput" value="<%= user.username %>" pattern="[a-zA-Z0-9_]+" title="Username can only contain letters, numbers, and underscores">
+                    <div class="field-actions">
+                        <button class="field-button save-button" onclick="saveField('username')">Save</button>
+                        <button class="field-button" onclick="cancelEdit('username')">Cancel</button>
+                    </div>
+                </div>
+
                 <div class="editable-field" id="bioField">
                     <div class="field-display">
                         <div class="bio" id="displayBio"><%= user.bio || 'No bio yet' %></div>
@@ -470,34 +482,42 @@
         }
 
         async function saveField(fieldType) {
-        const field = document.getElementById(fieldType + 'Field');
-        const input = document.getElementById(fieldType + 'Input');
-        const display = document.getElementById('display' + fieldType.charAt(0).toUpperCase() + fieldType.slice(1));
-        
-        let newValue = input.value.trim();
-        
-        if (fieldType === 'location' && newValue && !newValue.startsWith('📍')) {
-            newValue = '📍 ' + newValue;
-        }
-        
-        try {
-            const response = await fetch('/profile/update', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    name: fieldType === 'name' ? input.value.trim() : document.getElementById('nameInput').value.trim(),
-                    bio: fieldType === 'bio' ? input.value.trim() : document.getElementById('bioInput').value.trim(),
-                    location: fieldType === 'location' ? input.value.trim() : document.getElementById('locationInput').value.trim()
-                })
-            });
+            const field = document.getElementById(fieldType + 'Field');
+            const input = document.getElementById(fieldType + 'Input');
+            const display = document.getElementById('display' + fieldType.charAt(0).toUpperCase() + fieldType.slice(1));
             
-            const data = await response.json();
+            let newValue = input.value.trim();
             
-            if (data.success) {
-                if (newValue || fieldType !== 'location') {
-                    display.textContent = fieldType === 'location' && newValue ? newValue : input.value.trim();
+            if (fieldType === 'location' && newValue && !newValue.startsWith('📍')) {
+                newValue = '📍 ' + newValue;
+            }
+            
+            if (fieldType === 'username' && newValue && !newValue.startsWith('@')) {
+                newValue = '@' + newValue;
+            }
+            
+            try {
+                const response = await fetch('/profile/update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        name: fieldType === 'name' ? input.value.trim() : document.getElementById('nameInput').value.trim(),
+                        username: fieldType === 'username' ? input.value.trim() : document.getElementById('usernameInput').value.trim(),
+                        bio: fieldType === 'bio' ? input.value.trim() : document.getElementById('bioInput').value.trim(),
+                        location: fieldType === 'location' ? input.value.trim() : document.getElementById('locationInput').value.trim()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (fieldType === 'username') {
+                        display.textContent = newValue;
+                    } else if (newValue || fieldType !== 'location') {
+                        display.textContent = fieldType === 'location' && newValue ? newValue : input.value.trim();
+                    }
                     
                     if (fieldType === 'name') {
                         // Update all post names on the page
@@ -505,18 +525,16 @@
                             el.textContent = input.value.trim();
                         });
                     }
+                } else {
+                    alert(data.error || 'Failed to update profile');
                 }
-            } else {
-                alert('Failed to update profile');
+            } catch (error) {
+                console.error('Profile update error:', error);
+                alert('An error occurred. Please try again.');
             }
-        } catch (error) {
-            console.error('Profile update error:', error);
-            alert('An error occurred. Please try again.');
+            
+            field.classList.remove('editing');
         }
-        
-        field.classList.remove('editing');
-    }
-
         function cancelEdit(fieldType) {
             const field = document.getElementById(fieldType + 'Field');
             const input = document.getElementById(fieldType + 'Input');
@@ -524,6 +542,8 @@
             
             if (fieldType === 'location') {
                 input.value = display.textContent.replace('📍 ', '');
+            } else if (fieldType === 'username') {
+                input.value = display.textContent.replace('@', '');
             } else {
                 input.value = display.textContent;
             }
@@ -566,6 +586,7 @@
                                 alt="${user.name}" class="user-item-avatar">
                             <div class="user-item-info">
                                 <div class="user-item-name">${user.name}</div>
+                                <div class="user-item-username">@${user.username}</div>
                             </div>
                         </div>
                     `).join('');

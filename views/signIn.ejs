@@ -256,15 +256,18 @@
         <div id="signup-screen" class="auth-screen">
             <div class="form-content">
                 <div class="form-header">
-                    <button class="back-button back-to-choice">
-                        ←
-                    </button>
+                    <button class="back-button back-to-choice">←</button>
                     <h2 class="form-title">Create Account</h2>
                 </div>
+                <div id="signup-error" class="error-message"></div>
                 <form id="signup-form">
                     <div class="form-group">
                         <label for="signup-name" class="form-label">Name</label>
                         <input type="text" id="signup-name" name="name" class="form-input" placeholder="Aria Thompson" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-username" class="form-label">Username</label>
+                        <input type="text" id="signup-username" name="username" class="form-input" placeholder="ariathompson" required pattern="[a-zA-Z0-9_]+" title="Username can only contain letters, numbers, and underscores">
                     </div>
                     <div class="form-group">
                         <label for="signup-email" class="form-label">Email</label>
@@ -273,6 +276,11 @@
                     <div class="form-group">
                         <label for="signup-password" class="form-label">Password</label>
                         <input type="password" id="signup-password" name="password" class="form-input" placeholder="Create a strong password" required>
+                        <small id="password-strength" style="color:#8a8a8a;font-size:13px;display:block;margin-top:6px;"></small>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-confirm-password" class="form-label">Confirm Password</label>
+                        <input type="password" id="signup-confirm-password" name="confirmPassword" class="form-input" placeholder="Re-enter password" required>
                     </div>
                     <button type="submit" class="form-button" id="signup-btn">Create Account</button>
                 </form>
@@ -356,40 +364,76 @@
             submitBtn.textContent = 'Sign In';
         }
     });
-        // Sign Up Form Handler
+    // Password strength check
+        const passwordInput = document.getElementById('signup-password');
+        const confirmPasswordInput = document.getElementById('signup-confirm-password');
+        const passwordStrength = document.getElementById('password-strength');
+        const signupError = document.getElementById('signup-error');
+
+        passwordInput.addEventListener('input', () => {
+            const password = passwordInput.value;
+            let strengthMsg = '';
+            let strengthColor = '#dc3545';
+
+            if (password.length < 6) {
+                strengthMsg = 'Too short (min 6 chars)';
+            } else if (!/[A-Z]/.test(password)) {
+                strengthMsg = 'Add at least 1 uppercase letter';
+            } else if (!/[0-9]/.test(password)) {
+                strengthMsg = 'Add at least 1 number';
+            } else if (!/[!@#$%^&*]/.test(password)) {
+                strengthMsg = 'Add at least 1 special character (!@#$%^&*)';
+            } else {
+                strengthMsg = 'Strong password ✔';
+                strengthColor = '#28a745';
+            }
+
+            passwordStrength.textContent = strengthMsg;
+            passwordStrength.style.color = strengthColor;
+        });
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            
+
             const name = document.getElementById('signup-name').value;
+            const username = document.getElementById('signup-username').value;
             const email = document.getElementById('signup-email').value;
-            const password = document.getElementById('signup-password').value;
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
             const submitBtn = document.getElementById('signup-btn');
-            
+
+            signupError.classList.remove('show');
+
+            if (password !== confirmPassword) {
+                signupError.textContent = 'Passwords do not match';
+                signupError.classList.add('show');
+                return;
+            }
+
             // Disable button and show loading state
             submitBtn.disabled = true;
             submitBtn.textContent = 'Creating Account...';
-            
+
             try {
                 const response = await fetch('/signup', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ name, email, password })
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, username, email, password })
                 });
-                
+
                 const data = await response.json();
-                
+
                 if (data.success) {
                     window.location.href = data.redirect;
                 } else {
-                    alert(data.error || 'Sign up failed');
+                    signupError.textContent = data.error || 'Sign up failed';
+                    signupError.classList.add('show');
                     submitBtn.disabled = false;
                     submitBtn.textContent = 'Create Account';
                 }
             } catch (error) {
                 console.error('Sign up error:', error);
-                alert('An error occurred. Please try again.');
+                signupError.textContent = 'An error occurred. Please try again.';
+                signupError.classList.add('show');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Create Account';
             }

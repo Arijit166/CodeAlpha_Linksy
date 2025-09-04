@@ -35,47 +35,49 @@ router.post('/signin', async (req, res) => {
 // Sign up route
 router.post('/signup', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
-   
-    // Check if user already exists
-    const existingUser = await User.findOne({ email });
+    const { name, email, password, username } = req.body; // Add username here
+    
+    // Check if user already exists (email or username)
+    const existingUser = await User.findOne({ 
+      $or: [{ email }, { username }] 
+    });
+    
     if (existingUser) {
-      return res.status(400).json({ error: 'User already exists' });
+      if (existingUser.email === email) {
+        return res.status(400).json({ error: 'Email already exists' });
+      } else {
+        return res.status(400).json({ error: 'Username already taken' });
+      }
     }
-   
-    // Generate username from email
-    const username = email.split('@')[0].toLowerCase();
-   
-    // Check if username is taken, if so, add numbers
-    let finalUsername = username;
-    let counter = 1;
-    while (await User.findOne({ username: finalUsername })) {
-      finalUsername = `${username}${counter}`;
-      counter++;
-    }
-   
+    
     // Hash password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-   
-    // Create user
+    
+    // Create user with provided username
     const user = new User({
       name,
       email,
       password: hashedPassword,
-      username: finalUsername
+      username // Use the username from the form
     });
-   
+    
     await user.save();
-   
+    
     req.session.userId = user._id;
     res.json({ success: true, redirect: '/' });
   } catch (error) {
     console.error('Sign up error:', error);
+    if (error.code === 11000) {
+      // Handle duplicate key error
+      const field = Object.keys(error.keyPattern)[0];
+      return res.status(400).json({ 
+        error: `${field === 'email' ? 'Email' : 'Username'} already exists` 
+      });
+    }
     res.status(500).json({ error: 'Server error' });
   }
 });
-
 // Sign out route
 router.post('/signout', (req, res) => {
   req.session.destroy((err) => {

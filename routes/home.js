@@ -9,14 +9,22 @@ const { formatTimestamp } = require('../utils/helpers');
 router.get('/', requireAuth, async (req, res) => {
   try {
     const user = await User.findById(req.session.userId).select('-password');
+    
+    // Check if user exists
+    if (!user) {
+      console.error('User not found for session:', req.session.userId);
+      req.session.destroy(); // Clear invalid session
+      return res.redirect('/signin');
+    }
+    
     const posts = await Post.find()
       .populate('user', 'name username avatar')
       .populate('comments.user', 'username')
       .sort({ createdAt: -1 })
       .limit(20);
-   
+
     const suggestions = await User.find({
-      _id: { $ne: req.session.userId, $nin: user.following }
+      _id: { $ne: req.session.userId, $nin: user.following || [] } // Handle case where following might be undefined
     })
     .select('username avatar')
     .limit(8);
