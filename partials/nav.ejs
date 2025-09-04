@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+      --bg: #000000;
+      --nav-bg: rgba(11, 15, 20, 0.95);
+      --surface: #111111;
+      --surface-light: #1a1a1a;
+      --surface-hover: #222222;
+      --text: #ffffff;
+      --text-secondary: #b3b3b3;
+      --text-muted: #666666;
+      --border: #333333;
+      --border-light: #2a2a2a;
+      --primary: #1d9bf0;
+      --primary-hover: #1a8cd8;
+      --primary-glow: rgba(29, 155, 240, 0.3);
+      --heart: #f91880;
+      --heart-hover: #ff1a8c;
+      --success: #00ba7c;
+      --accent-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      --glass-bg: rgba(17, 17, 17, 0.8);
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--surface); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { 
+      background: linear-gradient(45deg, var(--primary), var(--heart));
+      border-radius: 3px;
+      transition: all 0.3s ease;
+    }
+    ::-webkit-scrollbar-thumb:hover { 
+      background: linear-gradient(45deg, var(--primary-hover), var(--heart-hover));
+    }
+    /* Mobile responsive */
+    @media (max-width: 768px) {
+      .navbar-container { 
+        padding: 10px 16px; 
+        gap: 10px; 
+        height: 65px;
+      }
+      .nav-btn span { display: none; }
+      .search-wrap { max-width: none; }
+      .welcome-banner { margin-top: 65px; top: 65px; }
+      .main-layout { padding: 24px 16px 80px; }
+      .post-card { 
+        border-radius: 12px; 
+        border-left: 1px solid var(--border); 
+        border-right: 1px solid var(--border); 
+      }
+    }
+     /* Main layout */
+    main {
+      margin-top: 0;
+      padding: 0;
+      min-height: 100vh;
+    }
+        /* Navbar */
+    .navbar {
+        position: fixed;
+        top: 0;
+        width: 100%;
+        background: linear-gradient(135deg, #1a2a6c, #1d9bf0);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* soft light border */
+        z-index: 1000;
+        backdrop-filter: blur(15px); /* glassy effect */
+        -webkit-backdrop-filter: blur(15px);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); /* deeper shadow for contrast */
+    }
+
+
+    .navbar-container {
+        margin-left: 20px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        height: 70px;
+        }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      color: var(--text);
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .logo-icon {
+      width: 38px;
+      height: 38px;
+      background: var(--accent-gradient);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      color: white;
+      font-size: 20px;
+      box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+
+    .logo-text {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .nav-spacer { flex: 0.5; }
+
+    .search-wrap {
+        flex: 1; /* grow to fill available space */
+        max-width: none; /* remove the previous max-width */
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 12px 16px;
+        border-radius: 12px;
+        transition: all 0.3s ease;
+        }
+
+    .search-wrap:focus-within {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px var(--primary-glow);
+    }
+
+    .search-wrap svg { 
+      width: 20px; 
+      height: 20px; 
+      color: var(--text-secondary);
+      transition: color 0.3s ease;
+    }
+
+    .search-wrap:focus-within svg {
+      color: var(--primary);
+    }
+
+    .search-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: var(--text);
+      width: 100%;
+      font-size: 15px;
+      font-weight: 400;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+      margin-left: auto;
+      margin-right: 16px;
+    }
+
+    .nav-btn {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      cursor: pointer;
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-btn::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .nav-btn:hover::before {
+      left: 100%;
+    }
+
+    .nav-btn:hover { 
+      background: var(--surface-hover);
+      border-color: var(--border-light);
+      transform: translateY(-1px);
+    }
+
+    .nav-btn.primary { 
+      background: #00ba7c;
+      color: white;
+      border-color: transparent;
+      box-shadow: 0 4px 15px var(--primary-glow);
+    }
+
+    .nav-btn.primary:hover { 
+      background: #009e68;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px var(--primary-glow);
+    }
+
+    .nav-icon { width: 20px; height: 20px; }@media (max-width: 480px) {
+      .navbar-container {
+        padding: 8px 12px;
+      }
+      .logo-text {
+        font-size: 20px;
+      }
+      .main-layout { padding: 20px 12px 80px; }
+      .post-card {
+        border-radius: 8px;
+        margin: 0 -4px;
+      }
+    }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+    <div class="navbar-container">
+      <a href="#" class="logo" aria-label="Home">
+        <div class="logo-icon">L</div>
+        <span class="logo-text">linksy</span>
+      </a>
+
+      <div class="nav-spacer" aria-hidden="true"></div>
+
+      <form class="search-wrap" role="search" aria-label="Search posts" onsubmit="event.preventDefault()">
+        <svg aria-hidden="true" viewBox="0 0 24 24" fill="none">
+          <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65" stroke="currentColor" stroke-width="2"></line>
+        </svg>
+        <input id="searchInput" class="search-input" type="search" placeholder="Search posts or users..." aria-label="Search" />
+      </form>
+
+      <div class="nav-actions">
+        <button class="nav-btn" id="homeBtn" aria-label="Home">
+            <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                <path d="M3 12 L12 3 L21 12 V21 H3 Z"></path>
+            </svg>
+            <span>Home</span>
+        </button>
+        <script>
+            document.getElementById("homeBtn").addEventListener("click", function () {
+                window.location.href = "/";
+            });
+        </script>
+        <button class="nav-btn primary" id="createPostBtn" aria-label="Create post">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          <span>Create a Post</span>
+        </button>
+        <script>
+        document.getElementById("createPostBtn").addEventListener("click", function () {
+            window.location.href = "/create-post"; 
+        });
+        </script>
+        <button class="nav-btn" id="profileBtn" aria-label="Profile">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>Profile</span>
+        </button>
+        <script>
+        document.getElementById("profileBtn").addEventListener("click", function () {
+            window.location.href = "/profile";
+        });
+        </script>
+        <button class="nav-btn" id="signOutBtn" aria-label="Sign In">
+          <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+            <polyline points="10,17 15,12 10,7"></polyline>
+            <line x1="15" y1="12" x2="3" y2="12"></line>
+          </svg>
+          <span>Sign Out</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+</body>
+<script>
+
+    // Search
+    searchInput.addEventListener('input', (e) => handleSearch(e.target.value));
+
+    // Add some loading animation for better UX
+    document.addEventListener('DOMContentLoaded', () => {
+      // Add a slight delay to simulate loading
+      setTimeout(() => {
+        document.body.style.opacity = '1';
+      }, 100);
+    });
+</script>
+</html>
