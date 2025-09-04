@@ -214,59 +214,116 @@
             </div>
         </div>
 
-        <!-- Screen 2: Sign In Form -->
-        <div id="signin-screen" class="auth-screen">
-            <div class="form-content">
-                <div class="form-header">
-                    <button class="back-button back-to-choice" aria-label="Go back">←</button>
-                    <h2 class="form-title">Sign In</h2>
-                </div>
-                <form onsubmit="event.preventDefault();">
-                    <div class="form-group">
-                        <label for="signin-email" class="form-label">Email</label>
-                        <input type="email" id="signin-email" class="form-input" placeholder="you@example.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signin-password" class="form-label">Password</label>
-                        <input type="password" id="signin-password" class="form-input" placeholder="••••••••" required>
-                    </div>
-                    <button type="submit" class="form-button" id="signIn-btn">Sign In</button>
-                    <script>
-                    document.getElementById("signIn-btn").addEventListener("click", function () {
-                        window.location.href = "index.html"; 
-                    });
-                    </script>
-                </form>
+        <!-- Replace the existing signin form and its script with this: -->
+        <form id="signin-form">
+            <div class="form-group">
+                <label for="signin-email" class="form-label">Email</label>
+                <input type="email" id="signin-email" name="email" class="form-input" placeholder="you@example.com" required>
             </div>
-        </div>
+            <div class="form-group">
+                <label for="signin-password" class="form-label">Password</label>
+                <input type="password" id="signin-password" name="password" class="form-input" placeholder="••••••••" required>
+            </div>
+            <button type="submit" class="form-button" id="signin-btn">Sign In</button>
+        </form>
 
-        <!-- Screen 3: Sign Up Form -->
-        <div id="signup-screen" class="auth-screen">
-            <div class="form-content">
-                <div class="form-header">
-                    <button class="back-button back-to-choice" aria-label="Go back">←</button>
-                    <h2 class="form-title">Create Account</h2>
-                </div>
-                <form onsubmit="event.preventDefault();">
-                    <div class="form-group">
-                        <label for="signup-name" class="form-label">Name</label>
-                        <input type="text" id="signup-name" class="form-input" placeholder="Aria Thompson" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-email" class="form-label">Email</label>
-                        <input type="email" id="signup-email" class="form-input" placeholder="you@example.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="signup-password" class="form-label">Password</label>
-                        <input type="password" id="signup-password" class="form-input" placeholder="Create a strong password" required>
-                    </div>
-                    <button type="submit" class="form-button">Create Account</button>
-                </form>
-                <div class="form-footer">
-                    <p>By signing up, you agree to our <a href="#">Terms of Service</a>.</p>
-                </div>
+        <!-- Replace the existing script with this: -->
+        <script>
+        document.getElementById('signin-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('signin-email').value;
+            const password = document.getElementById('signin-password').value;
+            const submitBtn = document.getElementById('signin-btn');
+            
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Signing in...';
+            
+            try {
+                const response = await fetch('/signin', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.error || 'Sign in failed');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Sign In';
+                }
+            } catch (error) {
+                console.error('Sign in error:', error);
+                alert('An error occurred. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Sign In';
+            }
+        });
+        </script>
+
+        <!-- Replace the existing signup form with this: -->
+        <form id="signup-form">
+            <div class="form-group">
+                <label for="signup-name" class="form-label">Name</label>
+                <input type="text" id="signup-name" name="name" class="form-input" placeholder="Aria Thompson" required>
             </div>
-        </div>
+            <div class="form-group">
+                <label for="signup-email" class="form-label">Email</label>
+                <input type="email" id="signup-email" name="email" class="form-input" placeholder="you@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="signup-password" class="form-label">Password</label>
+                <input type="password" id="signup-password" name="password" class="form-input" placeholder="Create a strong password" required>
+            </div>
+            <button type="submit" class="form-button" id="signup-btn">Create Account</button>
+        </form>
+
+        <!-- Add this script after the existing signin script: -->
+        <script>
+        document.getElementById('signup-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('signup-name').value;
+            const email = document.getElementById('signup-email').value;
+            const password = document.getElementById('signup-password').value;
+            const submitBtn = document.getElementById('signup-btn');
+            
+            // Disable button and show loading state
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creating Account...';
+            
+            try {
+                const response = await fetch('/signup', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert(data.error || 'Sign up failed');
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Account';
+                }
+            } catch (error) {
+                console.error('Sign up error:', error);
+                alert('An error occurred. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Create Account';
+            }
+        });
+        </script>
     </div>
 
     <script>

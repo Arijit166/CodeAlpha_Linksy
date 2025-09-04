@@ -825,7 +825,7 @@
         </button>
         <script>
         document.getElementById("createPostBtn").addEventListener("click", function () {
-            window.location.href = "create-post.html"; 
+            window.location.href = "/create-post"; 
         });
         </script>
         <button class="nav-btn" id="profileBtn" aria-label="Profile">
@@ -837,7 +837,7 @@
         </button>
         <script>
         document.getElementById("profileBtn").addEventListener("click", function () {
-            window.location.href = "profile.html";
+            window.location.href = "/profile";
         });
         </script>
         <button class="nav-btn" id="signOutBtn" aria-label="Sign In">
@@ -848,11 +848,6 @@
           </svg>
           <span>Sign Out</span>
         </button>
-
-        <script>
-            document.getElementById("signOutBtn").addEventListener("click", showSignOutConfirmation);
-        </script>
-
       </div>
     </div>
   </nav>
@@ -1122,51 +1117,35 @@
     }
     
   // Like
-    function handleLike(postId) {
-      const post = state.posts.find((p) => p.id === postId);
-      if (!post) return;
-      post.liked = !post.liked;
-      post.likes += post.liked ? 1 : -1;
-
-      const likeBtn = document.querySelector(`[data-post-id="${postId}"].like-btn`);
-      const likeIcon = likeBtn?.querySelector('.like-icon');
-      const likesCount = document.querySelector(`[data-post-id="${postId}"] .post-likes`);
-
-      likeBtn?.classList.toggle('liked', post.liked);
-      likeIcon?.setAttribute('fill', post.liked ? 'var(--heart)' : 'none');
-      likeIcon?.setAttribute('stroke', post.liked ? 'var(--heart)' : 'currentColor');
-      if (likesCount) likesCount.textContent = `${post.likes.toLocaleString()} likes`;
-
-      if (post.liked && likeBtn) likeBtn.classList.add('liked');
+    async function handleLike(postId) {
+      try {
+        const response = await fetch(`/posts/${postId}/like`, { method: 'POST' });
+        if (!response.ok) throw new Error('Failed to like post.');
+        const data = await response.json();
+        const post = state.posts.find((p) => p.id === postId);
+        if (!post) return;
+        post.liked = data.liked;
+        post.likes = data.likes;
+        renderPosts(); // Re-render to show updated state
+      } catch (error) {
+        console.error('Like error:', error);
+      }
     }
 
     // Double tap like
-    function handleDoubleTapLike(postId, event) {
+    async function handleDoubleTapLike(postId, event) {
       const post = state.posts.find((p) => p.id === postId);
-      if (!post) return;
-      if (!post.liked) {
-        post.liked = true;
-        post.likes += 1;
-
-        // Floating heart
-        const heart = document.createElement('div');
-        heart.innerHTML = '❤️';
-        heart.className = 'floating-heart';
-        heart.style.left = event.clientX + 'px';
-        heart.style.top = event.clientY + 'px';
-        document.body.appendChild(heart);
-        setTimeout(() => heart.remove(), 1200);
-
-        // Update UI
-        const likeBtn = document.querySelector(`[data-post-id="${postId}"].like-btn`);
-        const likeIcon = likeBtn?.querySelector('.like-icon');
-        const likesCount = document.querySelector(`[data-post-id="${postId}"] .post-likes`);
-
-        likeBtn?.classList.add('liked');
-        likeIcon?.setAttribute('fill', 'var(--heart)');
-        likeIcon?.setAttribute('stroke', 'var(--heart)');
-        if (likesCount) likesCount.textContent = `${post.likes.toLocaleString()} likes`;
-      }
+      if (!post || post.liked) return;
+      // If not liked, call the handleLike function
+      await handleLike(postId);
+      // Floating heart animation remains the same
+      const heart = document.createElement('div');
+      heart.innerHTML = '❤️';
+      heart.className = 'floating-heart';
+      heart.style.left = event.clientX + 'px';
+      heart.style.top = event.clientY + 'px';
+      document.body.appendChild(heart);
+      setTimeout(() => heart.remove(), 1200);
     }
 
     // Comment input
@@ -1179,22 +1158,22 @@
     }
 
     // Add comment
-    function addComment(postId, text) {
-      const post = state.posts.find((p) => p.id === postId);
-      if (!post) return;
-      const newComment = {
-        id: `c${Date.now()}`,
-        username: state.currentUser.username,
-        text: text.trim(),
-      };
-      post.comments.push(newComment);
-
-      // Replace single post
-      const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-      const postIndex = state.posts.findIndex((p) => p.id === postId);
-      postElement?.insertAdjacentHTML('afterend', renderSinglePost(state.posts[postIndex]));
-      postElement?.remove();
-    }
+    async function addComment(postId, text) {
+      if (!text) return;
+      try {
+        const response = await fetch(`/posts/${postId}/comment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text }),
+        });
+        if (!response.ok) throw new Error('Failed to post comment.');
+        const post = state.posts.find((p) => p.id === postId);
+        post.comments.push({ username: state.currentUser.username, text });
+        renderPosts();
+      } catch (error) {
+        console.error('Comment error:', error);
+      }
+}
 
     // Render single post
     function renderSinglePost(post) {
@@ -1300,11 +1279,18 @@
     }
 
     // Suggestions: follow toggle
-    function toggleFollow(id) {
-      const s = state.suggestions.find((x) => x.id === id);
-      if (!s) return;
-      s.following = !s.following;
-      renderSuggestions();
+    async function toggleFollow(id) {
+      try {
+        const response = await fetch(`/users/${id}/follow`, { method: 'POST' });
+        if (!response.ok) throw new Error('Failed to toggle follow status.');
+        const data = await response.json();
+        const suggestion = state.suggestions.find((s) => s.id === id);
+        if (!suggestion) return;
+        suggestion.following = data.following;
+        renderSuggestions();
+      } catch (error) {
+        console.error('Follow error:', error);
+      }
     }
 
     // Search posts by caption or username
@@ -1420,45 +1406,40 @@
         const cancelBtn = document.getElementById('cancelSignOut');
         const confirmBtn = document.getElementById('confirmSignOut');
         
-        // Add hover effects
-        cancelBtn.addEventListener('mouseenter', () => {
-            cancelBtn.style.background = '#1a1a1a';
-        });
-        cancelBtn.addEventListener('mouseleave', () => {
-            cancelBtn.style.background = 'none';
-        });
-        
-        confirmBtn.addEventListener('mouseenter', () => {
-            confirmBtn.style.background = '#e55555';
-            confirmBtn.style.borderColor = '#e55555';
-        });
-        confirmBtn.addEventListener('mouseleave', () => {
-            confirmBtn.style.background = '#ff6b6b';
-            confirmBtn.style.borderColor = '#ff6b6b';
-        });
+        // Clean up function
+        const cleanup = () => {
+            document.body.removeChild(overlay);
+            document.body.removeChild(confirmationModal);
+        };
         
         // Handle cancel
-        cancelBtn.addEventListener('click', () => {
-            document.body.removeChild(overlay);
-            document.body.removeChild(confirmationModal);
-        });
+        cancelBtn.addEventListener('click', cleanup);
+        overlay.addEventListener('click', cleanup);
         
         // Handle confirm sign out
-        confirmBtn.addEventListener('click', () => {
-            // Remove modal first
-            document.body.removeChild(overlay);
-            document.body.removeChild(confirmationModal);
+        confirmBtn.addEventListener('click', async () => {
+            confirmBtn.disabled = true;
+            confirmBtn.textContent = 'Signing out...';
             
-            // Perform sign out
-            console.log('User signed out');
-            // Redirect to sign-in page
-            window.location.href = 'signin.html'; // Replace with your actual sign-in page
-        });
-        
-        // Close on overlay click
-        overlay.addEventListener('click', () => {
-            document.body.removeChild(overlay);
-            document.body.removeChild(confirmationModal);
+            try {
+                const response = await fetch('/signout', { 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                const data = await response.json();
+                if (data.success) {
+                    window.location.href = data.redirect;
+                } else {
+                    alert('Sign out failed. Please try again.');
+                    cleanup();
+                }
+            } catch (error) {
+                console.error('Sign out error:', error);
+                alert('An error occurred. Please try again.');
+                cleanup();
+            }
         });
     }
 
