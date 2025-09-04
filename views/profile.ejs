@@ -201,12 +201,11 @@
 </head>
 <body>
 
-    <div class="profile-layout">
-        
+    <div class="profile-layout">      
         <div class="profile-sidebar">
             <div class="profile-header">
                 <div class="profile-avatar-container" id="avatarContainer">
-                    <img src="https://images.unsplash.com/photo-1494790108755-2616c9ca8a66?w=150&h=150&fit=crop&crop=face" alt="Profile" class="profile-avatar" id="profileAvatar">
+                    <img src="<%= user.avatar %>" alt="Profile" class="profile-avatar" id="profileAvatar">
                     <div class="avatar-overlay">
                         <span>Change Photo</span>
                     </div>
@@ -218,11 +217,11 @@
                 <div class="editable-field" id="nameField">
                     <div class="field-display">
                         <div>
-                            <h2 class="profile-name" id="displayName">Aria Thompson</h2>
+                            <h2 class="profile-name" id="displayName"><%= user.name %></h2>
                         </div>
                         <button class="inline-edit-btn" onclick="editField('name')">Edit</button>
                     </div>
-                    <input type="text" class="field-input" id="nameInput" value="Aria Thompson">
+                    <input type="text" class="field-input" id="nameInput" value="<%= user.name %>">
                     <div class="field-actions">
                         <button class="field-button save-button" onclick="saveField('name')">Save</button>
                         <button class="field-button" onclick="cancelEdit('name')">Cancel</button>
@@ -231,10 +230,10 @@
                 
                 <div class="editable-field" id="bioField">
                     <div class="field-display">
-                        <div class="bio" id="displayBio">Capturing moments through my lens 📸 | Nature enthusiast | Coffee lover ☕</div>
+                        <div class="bio" id="displayBio"><%= user.bio || 'No bio yet' %></div>
                         <button class="inline-edit-btn" onclick="editField('bio')">Edit</button>
                     </div>
-                    <textarea class="field-input" id="bioInput" rows="3" style="resize: vertical; min-height: 60px;">Capturing moments through my lens 📸 | Nature enthusiast | Coffee lover ☕</textarea>
+                    <textarea class="field-input" id="bioInput" rows="3" style="resize: vertical; min-height: 60px;"><%= user.bio || '' %></textarea>
                     <div class="field-actions">
                         <button class="field-button save-button" onclick="saveField('bio')">Save</button>
                         <button class="field-button" onclick="cancelEdit('bio')">Cancel</button>
@@ -243,10 +242,10 @@
                 
                 <div class="editable-field" id="locationField">
                     <div class="field-display">
-                        <div class="location" id="displayLocation">📍 Seattle, WA</div>
+                        <div class="location" id="displayLocation"><%= user.location ? '📍 ' + user.location : '📍 Add location' %></div>
                         <button class="inline-edit-btn" onclick="editField('location')">Edit</button>
                     </div>
-                    <input type="text" class="field-input" id="locationInput" value="Seattle, WA" placeholder="Enter location">
+                    <input type="text" class="field-input" id="locationInput" value="<%= user.location || '' %>" placeholder="Enter location">
                     <div class="field-actions">
                         <button class="field-button save-button" onclick="saveField('location')">Save</button>
                         <button class="field-button" onclick="cancelEdit('location')">Cancel</button>
@@ -254,9 +253,9 @@
                 </div>
                 
                 <div class="stats">
-                    <div class="stat"><strong>1,247</strong> Following</div>
-                    <div class="stat"><strong>3,892</strong> Followers</div>
-                    <div class="stat"><strong>2</strong> Posts</div>
+                    <div class="stat"><strong><%= user.following.length %></strong> Following</div>
+                    <div class="stat"><strong><%= user.followers.length %></strong> Followers</div>
+                    <div class="stat"><strong><%= posts.length %></strong> Posts</div>
                 </div>
             </div>
         </div>
@@ -266,37 +265,32 @@
                 <div class="tab active">Posts</div>
             </div>
 
-            <div class="posts-container">
-                <div class="post">
-                    <div class="post-header">
-                        <img src="https://images.unsplash.com/photo-1494790108755-2616c9ca8a66?w=80&h=80&fit=crop&crop=face" alt="aria" class="post-avatar" id="postAvatar1">
-                        <div class="post-info">
-                            <div class="post-user">
-                                <span class="post-name" id="postName1">Aria Thompson</span>
-                                <span class="post-time"> • 2 hours ago</span>
+        <div class="posts-container">
+                <% if (posts.length === 0) { %>
+                    <div style="text-align: center; color: #8a8a8a; padding: 40px 0;">
+                        <p>No posts yet</p>
+                    </div>
+                <% } else { %>
+                    <% posts.forEach(post => { %>
+                        <div class="post">
+                            <div class="post-header">
+                                <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar">
+                                <div class="post-info">
+                                    <div class="post-user">
+                                        <span class="post-name"><%= post.user.name %></span>
+                                        <span class="post-time"> • <%= post.timestamp %></span>
+                                    </div>
+                                </div>
                             </div>
+                            <% if (post.caption) { %>
+                                <div class="post-content"><%= post.caption %></div>
+                            <% } %>
+                            <% if (post.image) { %>
+                                <img src="<%= post.image %>" alt="Post image" class="post-image">
+                            <% } %>
                         </div>
-                    </div>
-                    <div class="post-content">
-                        Caught this incredible misty morning in the hills today. There's something magical about the way fog rolls over the landscape, creating layers of depth and mystery. Sometimes the best shots happen when you least expect them. 🌫️
-                    </div>
-                    <img src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop" alt="Misty landscape" class="post-image">
-                </div>
-
-                <div class="post">
-                    <div class="post-header">
-                        <img src="https://images.unsplash.com/photo-1494790108755-2616c9ca8a66?w=80&h=80&fit=crop&crop=face" alt="aria" class="post-avatar" id="postAvatar2">
-                        <div class="post-info">
-                            <div class="post-user">
-                                <span class="post-name" id="postName2">Aria Thompson</span>
-                                <span class="post-time"> • 1 day ago</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="post-content">
-                        Golden hour at the local coffee shop. Nothing beats that perfect lighting streaming through the windows while working on photo edits. ☕✨
-                    </div>
-                </div>
+                    <% }) %>
+                <% } %>
             </div>
         </div>
     </div>
@@ -327,28 +321,53 @@
             input.focus();
         }
 
-        function saveField(fieldType) {
-            const field = document.getElementById(fieldType + 'Field');
-            const input = document.getElementById(fieldType + 'Input');
-            const display = document.getElementById('display' + fieldType.charAt(0).toUpperCase() + fieldType.slice(1));
-            
-            let newValue = input.value.trim();
-            
-            if (fieldType === 'location' && newValue && !newValue.startsWith('📍')) {
-                newValue = '📍 ' + newValue;
-            }
-            
-            if (newValue) {
-                display.textContent = newValue;
-                
-                if (fieldType === 'name') {
-                    document.getElementById('postName1').textContent = newValue;
-                    document.getElementById('postName2').textContent = newValue;
-                }
-            }
-            
-            field.classList.remove('editing');
+        async function saveField(fieldType) {
+        const field = document.getElementById(fieldType + 'Field');
+        const input = document.getElementById(fieldType + 'Input');
+        const display = document.getElementById('display' + fieldType.charAt(0).toUpperCase() + fieldType.slice(1));
+        
+        let newValue = input.value.trim();
+        
+        if (fieldType === 'location' && newValue && !newValue.startsWith('📍')) {
+            newValue = '📍 ' + newValue;
         }
+        
+        try {
+            const response = await fetch('/profile/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: fieldType === 'name' ? input.value.trim() : document.getElementById('nameInput').value.trim(),
+                    bio: fieldType === 'bio' ? input.value.trim() : document.getElementById('bioInput').value.trim(),
+                    location: fieldType === 'location' ? input.value.trim() : document.getElementById('locationInput').value.trim()
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                if (newValue || fieldType !== 'location') {
+                    display.textContent = fieldType === 'location' && newValue ? newValue : input.value.trim();
+                    
+                    if (fieldType === 'name') {
+                        // Update all post names on the page
+                        document.querySelectorAll('.post-name').forEach(el => {
+                            el.textContent = input.value.trim();
+                        });
+                    }
+                }
+            } else {
+                alert('Failed to update profile');
+            }
+        } catch (error) {
+            console.error('Profile update error:', error);
+            alert('An error occurred. Please try again.');
+        }
+        
+        field.classList.remove('editing');
+    }
 
         function cancelEdit(fieldType) {
             const field = document.getElementById(fieldType + 'Field');

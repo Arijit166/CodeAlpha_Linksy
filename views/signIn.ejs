@@ -191,6 +191,20 @@
         .form-footer a:hover {
             text-decoration: underline;
         }
+        .error-message {
+            background: rgba(220, 53, 69, 0.1);
+            border: 1px solid rgba(220, 53, 69, 0.3);
+            color: #dc3545;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .error-message.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -214,78 +228,135 @@
             </div>
         </div>
 
-        <!-- Replace the existing signin form and its script with this: -->
-        <form id="signin-form">
-            <div class="form-group">
-                <label for="signin-email" class="form-label">Email</label>
-                <input type="email" id="signin-email" name="email" class="form-input" placeholder="you@example.com" required>
+        <!-- Screen 2: Sign In Form -->
+        <div id="signin-screen" class="auth-screen">
+            <div class="form-content">
+                <div class="form-header">
+                    <button class="back-button back-to-choice">
+                        ←
+                    </button>
+                    <h2 class="form-title">Sign In</h2>
+                </div>
+                <div id="signin-error" class="error-message"></div>
+                <form id="signin-form">
+                    <div class="form-group">
+                        <label for="signin-email" class="form-label">Email</label>
+                        <input type="email" id="signin-email" name="email" class="form-input" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signin-password" class="form-label">Password</label>
+                        <input type="password" id="signin-password" name="password" class="form-input" placeholder="••••••••" required>
+                    </div>
+                    <button type="submit" class="form-button" id="signin-btn">Sign In</button>
+                </form>
             </div>
-            <div class="form-group">
-                <label for="signin-password" class="form-label">Password</label>
-                <input type="password" id="signin-password" name="password" class="form-input" placeholder="••••••••" required>
-            </div>
-            <button type="submit" class="form-button" id="signin-btn">Sign In</button>
-        </form>
+        </div>
 
-        <!-- Replace the existing script with this: -->
-        <script>
+        <!-- Screen 3: Sign Up Form -->
+        <div id="signup-screen" class="auth-screen">
+            <div class="form-content">
+                <div class="form-header">
+                    <button class="back-button back-to-choice">
+                        ←
+                    </button>
+                    <h2 class="form-title">Create Account</h2>
+                </div>
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-name" class="form-label">Name</label>
+                        <input type="text" id="signup-name" name="name" class="form-input" placeholder="Aria Thompson" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-email" class="form-label">Email</label>
+                        <input type="email" id="signup-email" name="email" class="form-input" placeholder="you@example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password" class="form-label">Password</label>
+                        <input type="password" id="signup-password" name="password" class="form-input" placeholder="Create a strong password" required>
+                    </div>
+                    <button type="submit" class="form-button" id="signup-btn">Create Account</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Screen navigation
+        const choiceScreen = document.getElementById('choice-screen');
+        const signinScreen = document.getElementById('signin-screen');
+        const signupScreen = document.getElementById('signup-screen');
+
+        const showSigninBtn = document.getElementById('show-signin');
+        const showSignupBtn = document.getElementById('show-signup');
+        const backBtns = document.querySelectorAll('.back-to-choice');
+
+        function showScreen(screenToShow) {
+            // Hide all screens
+            [choiceScreen, signinScreen, signupScreen].forEach(screen => {
+                screen.classList.remove('active');
+            });
+            // Show the target screen
+            screenToShow.classList.add('active');
+        }
+
+        showSigninBtn.addEventListener('click', () => {
+            showScreen(signinScreen);
+        });
+
+        showSignupBtn.addEventListener('click', () => {
+            showScreen(signupScreen);
+        });
+
+        backBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                showScreen(choiceScreen);
+            });
+        });
+
         document.getElementById('signin-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
+        e.preventDefault();
+        
+        const email = document.getElementById('signin-email').value;
+        const password = document.getElementById('signin-password').value;
+        const submitBtn = document.getElementById('signin-btn');
+        const errorDiv = document.getElementById('signin-error');
+        
+        // Hide any previous errors
+        errorDiv.classList.remove('show');
+        
+        // Disable button and show loading state
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Signing in...';
+        
+        try {
+            const response = await fetch('/signin', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email, password })
+            });
             
-            const email = document.getElementById('signin-email').value;
-            const password = document.getElementById('signin-password').value;
-            const submitBtn = document.getElementById('signin-btn');
+            const data = await response.json();
             
-            // Disable button and show loading state
-            submitBtn.disabled = true;
-            submitBtn.textContent = 'Signing in...';
-            
-            try {
-                const response = await fetch('/signin', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    window.location.href = data.redirect;
-                } else {
-                    alert(data.error || 'Sign in failed');
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Sign In';
-                }
-            } catch (error) {
-                console.error('Sign in error:', error);
-                alert('An error occurred. Please try again.');
+            if (data.success) {
+                window.location.href = data.redirect;
+            } else {
+                // Show error message in the form
+                errorDiv.textContent = 'Invalid email address or password. Please try again.';
+                errorDiv.classList.add('show');
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Sign In';
             }
-        });
-        </script>
-
-        <!-- Replace the existing signup form with this: -->
-        <form id="signup-form">
-            <div class="form-group">
-                <label for="signup-name" class="form-label">Name</label>
-                <input type="text" id="signup-name" name="name" class="form-input" placeholder="Aria Thompson" required>
-            </div>
-            <div class="form-group">
-                <label for="signup-email" class="form-label">Email</label>
-                <input type="email" id="signup-email" name="email" class="form-input" placeholder="you@example.com" required>
-            </div>
-            <div class="form-group">
-                <label for="signup-password" class="form-label">Password</label>
-                <input type="password" id="signup-password" name="password" class="form-input" placeholder="Create a strong password" required>
-            </div>
-            <button type="submit" class="form-button" id="signup-btn">Create Account</button>
-        </form>
-
-        <!-- Add this script after the existing signin script: -->
-        <script>
+        } catch (error) {
+            console.error('Sign in error:', error);
+            errorDiv.textContent = 'An error occurred. Please try again.';
+            errorDiv.classList.add('show');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Sign In';
+        }
+    });
+        // Sign Up Form Handler
         document.getElementById('signup-form').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -322,40 +393,6 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = 'Create Account';
             }
-        });
-        </script>
-    </div>
-
-    <script>
-        const choiceScreen = document.getElementById('choice-screen');
-        const signinScreen = document.getElementById('signin-screen');
-        const signupScreen = document.getElementById('signup-screen');
-
-        const showSigninBtn = document.getElementById('show-signin');
-        const showSignupBtn = document.getElementById('show-signup');
-        const backBtns = document.querySelectorAll('.back-to-choice');
-
-        function showScreen(screenToShow) {
-            // Hide all screens
-            [choiceScreen, signinScreen, signupScreen].forEach(screen => {
-                screen.classList.remove('active');
-            });
-            // Show the target screen
-            screenToShow.classList.add('active');
-        }
-
-        showSigninBtn.addEventListener('click', () => {
-            showScreen(signinScreen);
-        });
-
-        showSignupBtn.addEventListener('click', () => {
-            showScreen(signupScreen);
-        });
-
-        backBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                showScreen(choiceScreen);
-            });
         });
     </script>
 </body>

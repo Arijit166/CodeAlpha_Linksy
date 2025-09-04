@@ -246,10 +246,10 @@
 <body>
     <div class="create-post-container">
         <div class="post-header">
-            <img src="https://images.unsplash.com/photo-1494790108755-2616c9ca8a66?w=96&h=96&fit=crop&crop=face" alt="Your avatar" class="user-avatar">
+            <img src="<%= user.avatar %>" alt="Your avatar" class="user-avatar">
             <div class="user-info">
-                <h3>Aria Thompson</h3>
-                <div class="username">@aria</div>
+                <h3><%= user.name %></h3>
+                <div class="username">@<%= user.username %></div>
             </div>
         </div>
 
@@ -372,106 +372,92 @@
             captionInput.dispatchEvent(new Event('input')); // Update character count and button state
         };
 
-       // Replace the form submission event listener with this updated version:
-
-        document.getElementById('postForm').addEventListener('submit', (e) => {
+        document.getElementById('postForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const postData = {
-                caption: captionInput.value.trim(),
-                image: currentImage,
-                timestamp: new Date().toISOString()
-            };
-            console.log('Creating post:', postData);
             
-            // Create success message container
-            const successMessage = document.createElement('div');
-            successMessage.style.cssText = `
-                position: fixed;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: #111111;
-                border: 1px solid #2a2a2a;
-                border-radius: 16px;
-                padding: 32px 24px;
-                text-align: center;
-                z-index: 1000;
-                min-width: 300px;
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-            `;
+            const postBtn = document.getElementById('postBtn');
+            postBtn.disabled = true;
+            postBtn.textContent = 'Posting...';
             
-            successMessage.innerHTML = `
-                <div style="color: #1da1f2; font-size: 24px; margin-bottom: 16px;">✓</div>
-                <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px; font-weight: 600;">Post Done Successfully!</h3>
-                <p style="color: #8a8a8a; font-size: 14px; margin-bottom: 24px;">Your post has been shared</p>
-                <button id="backToFeedBtn" style="
-                    background: #1da1f2;
-                    border: 2px solid #1da1f2;
-                    color: #ffffff;
-                    padding: 12px 24px;
-                    border-radius: 20px;
-                    font-size: 14px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.2s;
-                ">Back to Feed</button>
-            `;
-            
-            // Create overlay
-            const overlay = document.createElement('div');
-            overlay.style.cssText = `
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background: rgba(0, 0, 0, 0.7);
-                z-index: 999;
-            `;
-            
-            // Add to page
-            document.body.appendChild(overlay);
-            document.body.appendChild(successMessage);
-            
-            // Add hover effect to button
-            const backBtn = document.getElementById('backToFeedBtn');
-            backBtn.addEventListener('mouseenter', () => {
-                backBtn.style.background = '#1991db';
-                backBtn.style.borderColor = '#1991db';
-            });
-            backBtn.addEventListener('mouseleave', () => {
-                backBtn.style.background = '#1da1f2';
-                backBtn.style.borderColor = '#1da1f2';
-            });
-            
-            // Handle back to feed click
-            backBtn.addEventListener('click', () => {
-                window.location.href = 'index.html';
-            });
-            
-            // Clear draft and reset form
-            localStorage.removeItem('postDraft');
-            resetForm();
-        });
-        
-        // --- Load Draft on Page Load ---
-        window.addEventListener('load', () => {
-            const savedDraft = localStorage.getItem('postDraft');
-            if (savedDraft) {
-                const draft = JSON.parse(savedDraft);
-                if (confirm('You have a saved draft. Would you like to load it?')) {
-                    captionInput.value = draft.caption || '';
-                    if (draft.image) {
-                        currentImage = draft.image;
-                        previewImage.src = currentImage;
-                        imageUploadArea.style.display = 'none';
-                        imagePreview.style.display = 'block';
-                    }
-                    updatePostButtonState();
-                    captionInput.dispatchEvent(new Event('input'));
+            try {
+                const response = await fetch('/create-post', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        caption: captionInput.value.trim(),
+                        image: currentImage || ''
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    // Show success message
+                    const successMessage = document.createElement('div');
+                    successMessage.style.cssText = `
+                        position: fixed;
+                        top: 50%;
+                        left: 50%;
+                        transform: translate(-50%, -50%);
+                        background: #111111;
+                        border: 1px solid #2a2a2a;
+                        border-radius: 16px;
+                        padding: 32px 24px;
+                        text-align: center;
+                        z-index: 1000;
+                        min-width: 300px;
+                        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+                    `;
+                    
+                    successMessage.innerHTML = `
+                        <div style="color: #1da1f2; font-size: 24px; margin-bottom: 16px;">✓</div>
+                        <h3 style="color: #ffffff; font-size: 18px; margin-bottom: 8px; font-weight: 600;">Post Created Successfully!</h3>
+                        <p style="color: #8a8a8a; font-size: 14px; margin-bottom: 24px;">Your post has been shared</p>
+                        <button id="backToFeedBtn" style="
+                            background: #1da1f2;
+                            border: 2px solid #1da1f2;
+                            color: #ffffff;
+                            padding: 12px 24px;
+                            border-radius: 20px;
+                            font-size: 14px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.2s;
+                        ">Back to Feed</button>
+                    `;
+                    
+                    const overlay = document.createElement('div');
+                    overlay.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0, 0, 0, 0.7);
+                        z-index: 999;
+                    `;
+                    
+                    document.body.appendChild(overlay);
+                    document.body.appendChild(successMessage);
+                    
+                    document.getElementById('backToFeedBtn').addEventListener('click', () => {
+                        window.location.href = '/';
+                    });
+                    
+                    resetForm();
+                } else {
+                    alert(data.error || 'Failed to create post');
                 }
+            } catch (error) {
+                console.error('Post creation error:', error);
+                alert('An error occurred. Please try again.');
+            } finally {
+                postBtn.disabled = false;
+                postBtn.textContent = 'Post';
             }
-        });
+        });     
     </script>
 </body>
 </html>
