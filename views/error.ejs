@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 • Linksy</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body {
+      background: #0b0f14;
+      color: var(--text-primary, #fff);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      text-align: center;
+      flex-direction: column;
+      padding: 20px;
+    }
+
+    .error-container {
+      max-width: 600px;
+    }
+
+    .error-code {
+      font-size: 6rem;
+      font-weight: 700;
+      color: #3b82f6;
+      margin-bottom: 10px;
+    }
+
+    .error-message {
+      font-size: 1.5rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    .error-subtext {
+      font-size: 1rem;
+      color: var(--text-secondary, #aaa);
+      margin-bottom: 32px;
+    }
+
+    .btn-home {
+      display: inline-block;
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      background: linear-gradient(90deg, #3b82f6, #9333ea);
+      color: #fff;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .btn-home:hover {
+      transform: translateY(-2px);
+      opacity: 0.9;
+    }
+
+    .illustration {
+      font-size: 5rem;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="error-container">
+    <div class="illustration">🔍</div>
+    <div class="error-code">404</div>
+    <div class="error-message">Oops! Page not found</div>
+    <div class="error-subtext">
+      The page you’re looking for doesn’t exist or has been moved.<br>
+      Try going back to your feed.
+    </div>
+    <a href="/" class="btn-home">⬅ Back to Home</a>
+  </div>
+</body>
+</html>

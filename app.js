@@ -59,7 +59,7 @@ app.use((err, req, res, next) => {
 
 // 404 handler
 app.use((req, res) => {
-  res.status(404).send('Page not found');
+  res.status(404).render('error');
 });
 
 const PORT = 3000;

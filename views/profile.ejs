@@ -957,7 +957,7 @@
                         modalBody.innerHTML = '<div class="modal-empty">No likes yet</div>';
                     } else {
                         modalBody.innerHTML = data.users.map(user => `
-                            <div class="user-item" onclick="window.location.href='/users/${user.username}'">
+                            <div class="user-item" onclick="window.location.href='/user/${user.username}'">
                                 <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
                                     alt="${user.name}" class="user-item-avatar">
                                 <div class="user-item-info">
@@ -997,7 +997,7 @@
                     modalBody.innerHTML = `<div class="modal-empty">No ${type} yet</div>`;
                 } else {
                     modalBody.innerHTML = data.users.map(user => `
-                        <div class="user-item" onclick="window.location.href='/users/${user.username}'">
+                        <div class="user-item" onclick="window.location.href='/user/${user.username}'">
                             <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
                                 alt="${user.name}" class="user-item-avatar">
                             <div class="user-item-info">
@@ -1101,7 +1101,7 @@
                                 alt="${comment.user.name}" class="comment-item-avatar">
                             <div class="comment-item-content">
                                 <div class="comment-item-header">
-                                    <span class="comment-item-name">${comment.user.name}</span>
+                                    <span class="comment-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${comment.user.username}'">${comment.user.name}</span>
                                     <span class="comment-item-time">${formatTime(comment.createdAt)}</span>
                                 </div>
                                 <div class="comment-item-text">${comment.text}</div>
@@ -1126,7 +1126,7 @@
                                         alt="${reply.user.name}" class="reply-item-avatar">
                                     <div class="reply-item-content">
                                         <div class="reply-item-header">
-                                            <span class="reply-item-name">${reply.user.name}</span>
+                                            <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
                                             <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
                                         </div>
                                         <div class="reply-item-text">${reply.text}</div>
@@ -1206,7 +1206,7 @@
                             alt="${data.reply.user.name}" class="reply-item-avatar">
                         <div class="reply-item-content">
                             <div class="reply-item-header">
-                                <span class="reply-item-name">${data.reply.user.name}</span>
+                                <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${data.reply.user.username}'">${data.reply.user.name}</span>
                                 <span class="reply-item-time">${formatTime(data.reply.createdAt)}</span>
                             </div>
                             <div class="reply-item-text">${data.reply.text}</div>
