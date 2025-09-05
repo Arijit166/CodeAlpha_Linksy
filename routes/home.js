@@ -32,35 +32,52 @@ router.get('/', requireAuth, async (req, res) => {
     }
 
     // Smart suggestions: Only show followers and mutual connections
-  let suggestions = [];
+    let suggestions = [];
 
-  // 1. Get users who follow the current user
-  const followers = await User.find({
-    following: req.session.userId,
-    _id: { $nin: followingIds } // Exclude users already being followed
-  })
-  .select('username name avatar followers following')
-  .limit(4);
-
-  // 2. Get mutual connections (A follows B, B follows C, suggest C to A)
-  let mutualConnections = [];
-  if (followingIds.length > 0) {
-    // Find users who are followed by people the current user follows
-    // but exclude direct followers (already captured above)
-    mutualConnections = await User.find({
-      followers: { $in: followingIds },
-      _id: { 
-        $ne: req.session.userId, 
-        $nin: [...followingIds, ...followers.map(f => f._id)] 
-      },
-      following: { $ne: req.session.userId } // Exclude users who already follow current user
+    // 1. Get users who follow the current user
+    const followers = await User.find({
+      following: req.session.userId,
+      _id: { $nin: followingIds } // Exclude users already being followed
     })
     .select('username name avatar followers following')
-    .limit(4);
-  }
+    .limit(10);
 
-  // Combine suggestions
-  suggestions = [...followers, ...mutualConnections].slice(0, 8);
+    // 2. Get mutual connections - multiple patterns:
+    let mutualConnections = [];
+    if (followingIds.length > 0) {
+      // Pattern 1: A follows B, B follows C, suggest C to A
+      const pattern1 = await User.find({
+        followers: { $in: followingIds },
+        _id: { 
+          $ne: req.session.userId, 
+          $nin: [...followingIds, ...followers.map(f => f._id)] 
+        },
+        following: { $ne: req.session.userId } // Exclude users who already follow current user
+      })
+      .select('username name avatar followers following')
+      .limit(10);
+
+      // Pattern 2: A follows B, C also follows B, suggest C to A and A to C
+      const pattern2 = await User.find({
+        following: { $in: followingIds }, // Users who follow the same people as current user
+        _id: { 
+          $ne: req.session.userId, 
+          $nin: [...followingIds, ...followers.map(f => f._id)] 
+        },
+        followers: { $ne: req.session.userId } // Exclude users who already follow current user
+      })
+      .select('username name avatar followers following')
+      .limit(10);
+
+      // Combine both patterns and deduplicate
+      const allMutual = [...pattern1, ...pattern2];
+      mutualConnections = allMutual.filter((suggestion, index, self) => 
+        index === self.findIndex(s => s._id.toString() === suggestion._id.toString())
+      );
+    }
+
+    // Combine suggestions
+    suggestions = [...followers, ...mutualConnections].slice(0, 8);
 
     res.render('index', {
       user,

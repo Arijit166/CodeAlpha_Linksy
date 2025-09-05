@@ -118,6 +118,7 @@
     .main-feed {
       flex: 1;
       min-width: 0;
+      margin-right: 352px; /* Width of sidebar + gap */
     }
 
     .feed { 
@@ -129,11 +130,11 @@
     /* <CHANGE> Updated sidebar to be fixed and match screenshot design */
     .sidebar-container {
       width: 320px;
-      flex-shrink: 0;
-      height: fit-content;
-      position: sticky;
-      top: 180px;
-      max-height: calc(100vh - 200px);
+      position: fixed;
+      top: 200px;
+      right: calc((100vw - 1200px) / 2);
+      height: calc(100vh - 220px); /* Must have a defined height */
+      overflow: hidden;
     }
 
     .suggestions {
@@ -144,7 +145,31 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
       display: flex;
       flex-direction: column;
-      max-height: 100%;
+      height: 100%; /* Take full height of parent */
+    }
+
+    .suggestions-list { 
+      padding: 12px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 12px; /* Increased gap for comfortable spacing */
+      overflow-y: auto; /* This will scroll when content exceeds height */
+      flex: 1;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) var(--surface);
+    }
+
+    .suggestion-item {
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      gap: 12px; 
+      padding: 16px; /* Increased padding for comfort */
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+      flex-shrink: 0; /* Prevent shrinking */
     }
 
     .suggestions-header {
@@ -159,7 +184,7 @@
       top: 0;
       z-index: 1;
     }
-
+    
     .suggestions-title { 
       font-size: 18px; 
       font-weight: 800; 
@@ -168,17 +193,6 @@
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
-    }
-
-    .suggestions-list { 
-      padding: 12px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 8px;
-      overflow-y: auto;
-      flex: 1;
-      scrollbar-width: thin;
-      scrollbar-color: var(--primary) var(--surface);
     }
 
     .suggestions-list::-webkit-scrollbar {
@@ -198,18 +212,6 @@
 
     .suggestions-list::-webkit-scrollbar-thumb:hover {
       background: var(--primary-hover);
-    }
-
-    .suggestion-item {
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between;
-      gap: 12px; 
-      padding: 14px; 
-      border-radius: 12px;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
     }
 
     .suggestion-item::before {
@@ -319,13 +321,18 @@
 
     .follow-btn.following {
       background: transparent; 
-      color: var(--success);
-      border-color: var(--success);
+      color: var(--text);           /* White text */
+      border: 1px solid var(--border); /* Normal border color */
+      border-radius: 8px;           /* Optional: smooth corners */
+      outline: none;                /* Remove default focus outline */
+      transition: all 0.2s ease;   /* Smooth hover transition */
     }
 
     .follow-btn.following:hover {
-      background: rgba(0, 186, 124, 0.1);
+      background: var(--surface-hover); /* Dark hover background */
       transform: translateY(-1px);
+      outline: none; /* Ensure no outline on hover/focus */
+      box-shadow: none; /* Remove any accidental shadow */
     }
 
     body {
@@ -1009,11 +1016,10 @@
       <section aria-label="Feed" class="main-feed">
         <div id="feed" class="feed" aria-live="polite">
           <% if (!isFollowingAny) { %>
-            <div class="empty-feed">
-              <svg xmlns="http://www.w3.org/2000/svg" class="empty-icon" viewBox="0 0 64 64" fill="none">
-                <circle cx="32" cy="32" r="32" fill="#1d9bf0" fill-opacity="0.1"/>
-                <path d="M32 16v32M16 32h32" stroke="#1d9bf0" stroke-width="4" stroke-linecap="round"/>
-              </svg>
+           <div class="empty-feed">
+              <div class="empty-logo" style="width: 80px; height: 80px; background: var(--accent-gradient); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 48px; box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4); margin-bottom: 16px; opacity: 0.8;">
+                L
+              </div>
               <div class="welcome-text">
                 <h3>Welcome to Linksy!</h3>
                 <p>Start following people to see their posts in your feed.</p>
@@ -1109,7 +1115,6 @@
           <div class="suggestions-header">
             <h3 class="suggestions-title">Suggested for you</h3>
           </div>
-          <div class="suggestions-list">
             <!-- Sample suggested users matching screenshot design -->
             <div class="suggestions-list">
                 <% if (suggestions && suggestions.length > 0) { %>
@@ -1119,11 +1124,14 @@
                         <img src="<%= suggestion.avatar || 'https://picsum.photos/seed/' + suggestion.username + '/200/200' %>" 
                             alt="<%= suggestion.username %>" class="sug-avatar" />
                         <div class="sug-meta">
-                          <span class="sug-name"><%= suggestion.name || suggestion.username %></span>
+                          <span class="sug-name" style="cursor: pointer; color: var(--primary);" 
+                                onclick="window.location.href='/user/<%= suggestion.username %>'">
+                            <%= suggestion.name || suggestion.username %>
+                          </span>
                           <span class="sug-note"><%= suggestion.note %></span>
                         </div>
                       </div>
-                      <button class="follow-btn" onclick="toggleFollow('<%= suggestion._id %>')">Follow</button>
+                      <button class="follow-btn" onclick="toggleFollowSuggestion(event, '<%= suggestion._id %>')">Follow</button>
                     </div>
                   <% }) %>
                 <% } else { %>
@@ -1132,7 +1140,6 @@
                   </div>
                 <% } %>
               </div>
-          </div>
         </section>
       </aside>
     </div>
@@ -1140,7 +1147,9 @@
 
   <script>
     // <CHANGE> Added toggle follow function for sidebar
-    async function toggleFollow(userId) {
+    async function toggleFollowSuggestion(event, userId) {
+      event.stopPropagation(); // Prevent event bubbling
+      
       try {
         const response = await fetch(`/users/${userId}/follow`, {
           method: 'POST'
@@ -1162,7 +1171,7 @@
       } catch (error) {
         console.error('Follow error:', error);
       }
-    }
+}
     async function toggleLike(postId, event) {
       if (event) {
           event.stopPropagation();
