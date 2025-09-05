@@ -466,6 +466,174 @@
             cursor: pointer;
             user-select: none;
         }
+        
+        .comment-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .comment-item:hover {
+            background: #1a1a1a;
+        }
+
+        .comment-item-content {
+            flex: 1;
+        }
+
+        .comment-item-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .comment-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .reply-btn {
+            background: none;
+            border: none;
+            color: #8a8a8a;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .reply-btn:hover {
+            color: #1da1f2;
+        }
+
+        .replies-container {
+            margin-top: 12px;
+            margin-left: 44px; /* Indent replies */
+            border-left: 2px solid #2a2a2a;
+            padding-left: 12px;
+        }
+
+        .reply-item {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            padding: 6px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .reply-item:hover {
+            background: #1a1a1a;
+        }
+
+        .reply-item-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .reply-item-content {
+            flex: 1;
+        }
+
+        .reply-item-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 2px;
+        }
+
+        .reply-item-name {
+            font-weight: 600;
+            font-size: 12px;
+        }
+
+        .reply-item-time {
+            color: #8a8a8a;
+            font-size: 11px;
+        }
+
+        .reply-item-text {
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .reply-input-container {
+            display: none;
+            margin-top: 8px;
+            margin-left: 44px;
+            padding: 8px;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
+
+        .reply-input-container.show {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reply-input-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .reply-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .reply-input::placeholder {
+            color: #8a8a8a;
+        }
+
+        .reply-submit {
+            background: #1da1f2;
+            border: none;
+            color: #ffffff;
+            padding: 4px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .reply-submit:hover {
+            background: #1991d1;
+        }
+
+        .reply-submit:disabled {
+            background: #3a3a3a;
+            cursor: not-allowed;
+        }
+
+        .show-replies-btn {
+            background: none;
+            border: none;
+            color: #8a8a8a;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 4px;
+            transition: color 0.2s;
+        }
+
+        .show-replies-btn:hover {
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -914,6 +1082,7 @@
         }
     }
 
+    // Replace/update your loadComments function with this enhanced version
     async function loadComments(postId) {
         const commentsList = document.getElementById(`comments-list-${postId}`);
         commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">Loading comments...</div>';
@@ -927,7 +1096,7 @@
                     commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">No comments yet</div>';
                 } else {
                     commentsList.innerHTML = data.comments.map(comment => `
-                        <div class="comment-item">
+                        <div class="comment-item" data-comment-id="${comment._id}">
                             <img src="${comment.user.avatar || 'https://picsum.photos/seed/' + comment.user.username + '/200/200'}" 
                                 alt="${comment.user.name}" class="comment-item-avatar">
                             <div class="comment-item-content">
@@ -936,7 +1105,34 @@
                                     <span class="comment-item-time">${formatTime(comment.createdAt)}</span>
                                 </div>
                                 <div class="comment-item-text">${comment.text}</div>
+                                <div class="comment-item-actions">
+                                    <button class="reply-btn" onclick="showReplyInput('${postId}', '${comment._id}')">Reply</button>
+                                    ${comment.replies.length > 0 ? `<button class="show-replies-btn" onclick="toggleReplies('${comment._id}')">${comment.replies.length} replies</button>` : ''}
+                                </div>
                             </div>
+                        </div>
+                        
+                        <div class="reply-input-container" id="reply-input-${comment._id}">
+                            <img src="${getCurrentUserAvatar()}" alt="Your avatar" class="reply-input-avatar">
+                            <input type="text" class="reply-input" placeholder="Write a reply..." 
+                                onkeypress="handleReplyKeypress(event, '${postId}', '${comment._id}')">
+                            <button class="reply-submit" onclick="addReply('${postId}', '${comment._id}')">Reply</button>
+                        </div>
+                        
+                        <div class="replies-container" id="replies-${comment._id}" style="display: none;">
+                            ${comment.replies.map(reply => `
+                                <div class="reply-item">
+                                    <img src="${reply.user.avatar || 'https://picsum.photos/seed/' + reply.user.username + '/200/200'}" 
+                                        alt="${reply.user.name}" class="reply-item-avatar">
+                                    <div class="reply-item-content">
+                                        <div class="reply-item-header">
+                                            <span class="reply-item-name">${reply.user.name}</span>
+                                            <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
+                                        </div>
+                                        <div class="reply-item-text">${reply.text}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
                         </div>
                     `).join('');
                 }
@@ -945,6 +1141,119 @@
             console.error('Error loading comments:', error);
             commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">Failed to load comments</div>';
         }
+    }
+
+    // Function to show reply input
+    function showReplyInput(postId, commentId) {
+        // Hide all other reply inputs
+        document.querySelectorAll('.reply-input-container').forEach(container => {
+            container.classList.remove('show');
+        });
+        
+        const replyInput = document.getElementById(`reply-input-${commentId}`);
+        replyInput.classList.add('show');
+        replyInput.querySelector('.reply-input').focus();
+    }
+
+    // Function to toggle replies visibility
+    function toggleReplies(commentId) {
+        const repliesContainer = document.getElementById(`replies-${commentId}`);
+        const toggleBtn = event.target;
+        
+        if (repliesContainer.style.display === 'none') {
+            repliesContainer.style.display = 'block';
+            toggleBtn.textContent = 'Hide replies';
+        } else {
+            repliesContainer.style.display = 'none';
+            const repliesCount = repliesContainer.querySelectorAll('.reply-item').length;
+            toggleBtn.textContent = `${repliesCount} replies`;
+        }
+    }
+
+    // Function to add a reply
+    async function addReply(postId, commentId) {
+        const input = document.querySelector(`#reply-input-${commentId} .reply-input`);
+        const submitBtn = document.querySelector(`#reply-input-${commentId} .reply-submit`);
+        const text = input.value.trim();
+        
+        if (!text) return;
+        
+        try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Replying...';
+            
+            const response = await fetch(`/posts/${postId}/comments/${commentId}/reply`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                input.value = '';
+                
+                // Hide reply input
+                document.getElementById(`reply-input-${commentId}`).classList.remove('show');
+                
+                // Add new reply to the replies container
+                const repliesContainer = document.getElementById(`replies-${commentId}`);
+                const newReplyHTML = `
+                    <div class="reply-item">
+                        <img src="${data.reply.user.avatar || 'https://picsum.photos/seed/' + data.reply.user.username + '/200/200'}" 
+                            alt="${data.reply.user.name}" class="reply-item-avatar">
+                        <div class="reply-item-content">
+                            <div class="reply-item-header">
+                                <span class="reply-item-name">${data.reply.user.name}</span>
+                                <span class="reply-item-time">${formatTime(data.reply.createdAt)}</span>
+                            </div>
+                            <div class="reply-item-text">${data.reply.text}</div>
+                        </div>
+                    </div>
+                `;
+                
+                repliesContainer.innerHTML += newReplyHTML;
+                repliesContainer.style.display = 'block';
+                
+                // Update the main post's comment count
+                const postElement = document.querySelector(`[data-post-id="${postId}"]`);
+                const showRepliesBtn = document.querySelector(`[data-comment-id="${commentId}"] .show-replies-btn`);
+                if (showRepliesBtn) {
+                    showRepliesBtn.textContent = 'Hide replies';
+                } else {
+                    // Create new replies button if it doesn't exist
+                    const actionsDiv = document.querySelector(`[data-comment-id="${commentId}"] .comment-item-actions`);
+                    actionsDiv.innerHTML += `<button class="show-replies-btn" onclick="toggleReplies('${commentId}')">Hide replies</button>`;
+                }
+                
+            } else {
+                alert(data.error || 'Failed to add reply');
+            }
+        } catch (error) {
+            console.error('Error adding reply:', error);
+            alert('Failed to add reply');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Reply';
+        }
+    }
+
+    // Function to handle reply keypress
+    function handleReplyKeypress(event, postId, commentId) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            addReply(postId, commentId);
+        }
+        if (event.key === 'Escape') {
+            document.getElementById(`reply-input-${commentId}`).classList.remove('show');
+        }
+    }
+
+    // Helper function to get current user avatar (you'll need to make this available)
+    function getCurrentUserAvatar() {
+        return document.querySelector('.comment-avatar')?.src || 'https://picsum.photos/seed/default/200/200';
     }
 
     async function addComment(postId) {

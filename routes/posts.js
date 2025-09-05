@@ -78,7 +78,8 @@ router.post('/posts/:id/like', requireAuth, async (req, res) => {
 router.get('/posts/:id/comments', requireAuth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id)
-      .populate('comments.user', 'username name avatar');
+      .populate('comments.user', 'username name avatar')
+      .populate('comments.replies.user', 'username name avatar');
     
     if (!post) {
       return res.status(404).json({ error: 'Post not found' });
@@ -90,7 +91,13 @@ router.get('/posts/:id/comments', requireAuth, async (req, res) => {
         _id: comment._id,
         text: comment.text,
         user: comment.user,
-        createdAt: comment.createdAt
+        createdAt: comment.createdAt,
+        replies: comment.replies.map(reply => ({
+          _id: reply._id,
+          text: reply.text,
+          user: reply.user,
+          createdAt: reply.createdAt
+        }))
       }))
     });
   } catch (error) {
