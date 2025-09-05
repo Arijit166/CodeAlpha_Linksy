@@ -149,4 +149,53 @@ router.post('/posts/:id/comment', requireAuth, async (req, res) => {
   }
 });
 
+// Add this route to your posts route file for comment replies
+router.post('/posts/:postId/comments/:commentId/reply', requireAuth, async (req, res) => {
+  try {
+    const { text } = req.body;
+    const { postId, commentId } = req.params;
+    
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: 'Reply text is required' });
+    }
+    
+    const post = await Post.findById(postId);
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    
+    const comment = post.comments.id(commentId);
+    if (!comment) {
+      return res.status(404).json({ error: 'Comment not found' });
+    }
+    
+    comment.replies.push({
+      user: req.session.userId,
+      text: text.trim()
+    });
+    
+    await post.save();
+    
+    // Populate the new reply with user data
+    const populatedPost = await Post.findById(postId)
+      .populate('comments.replies.user', 'username name avatar');
+    
+    const populatedComment = populatedPost.comments.id(commentId);
+    const newReply = populatedComment.replies[populatedComment.replies.length - 1];
+    
+    res.json({
+      success: true,
+      reply: {
+        _id: newReply._id,
+        text: newReply.text,
+        user: newReply.user,
+        createdAt: newReply.createdAt
+      }
+    });
+  } catch (error) {
+    console.error('Error adding reply:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

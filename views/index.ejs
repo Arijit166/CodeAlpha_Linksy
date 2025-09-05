@@ -569,22 +569,297 @@
       color: white;
       opacity: 0.8;
     }
+    .post-actions {
+      display: flex;
+      gap: 20px;
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .post-action {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: color 0.2s;
+      padding: 8px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      background: none;
+      border: none;
+    }
+
+    .post-action:hover {
+      background: var(--surface-hover);
+      color: var(--text);
+    }
+
+    .post-action svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+    }
+
+    .like-icon.liked {
+      color: var(--heart);
+      fill: var(--heart);
+    }
+
+    .like-action:hover .like-icon:not(.liked) {
+      color: var(--heart);
+    }
+
+    .comment-action:hover svg {
+      color: var(--primary);
+    }
+
+    .comments-section {
+      border-top: 1px solid var(--border);
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .comment-input-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px 20px;
+      background: var(--glass-bg);
+      border-radius: 12px;
+      margin: 12px 20px;
+    }
+
+    .comment-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .comment-input-field {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-size: 14px;
+      outline: none;
+    }
+
+    .comment-input-field::placeholder {
+      color: var(--text-muted);
+    }
+
+    .comment-submit {
+      background: var(--primary);
+      border: none;
+      color: #ffffff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .comment-submit:hover {
+      background: var(--primary-hover);
+    }
+
+    .comment-submit:disabled {
+      background: var(--surface);
+      cursor: not-allowed;
+      opacity: 0.6;
+    }
+
+    .comments-list {
+      max-height: 400px;
+      overflow-y: auto;
+      padding: 0 20px;
+    }
+
+    .comment-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .comment-item:hover {
+      background: var(--surface-hover);
+    }
+
+    .comment-item-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .comment-item-content {
+      flex: 1;
+    }
+
+    .comment-item-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .comment-item-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .comment-item-time {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .comment-item-text {
+      font-size: 14px;
+      line-height: 1.4;
+      color: var(--text);
+    }
+
+    /* Empty state styles */
+    .empty-feed {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-feed h3 {
+      font-size: 24px;
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+    }
+
+    .empty-feed p {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
+
+    .caught-up {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      margin-top: 20px;
+    }
+
+    .caught-up-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+      opacity: 0.6;
+    }
+
+    .caught-up h3 {
+      font-size: 20px;
+      color: var(--text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .caught-up p {
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
   <%- include('../partials/nav') %>
   <main>
-    <section class="welcome-banner">
-      <div class="welcome-container">
-        <div class="welcome-content">
-          <h2 class="welcome-title">Posts for you</h2>
-          <p class="welcome-subtitle">Discover amazing content from creators you love</p>
-        </div>
-        <div class="welcome-icon">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.51 4.04 3 5.5l7 7z"></path>
-          </svg>
-        </div>
+    
+    <section aria-label="Feed" class="main-feed">
+      <div id="feed" class="feed" aria-live="polite">
+        <% if (!isFollowingAny) { %>
+          <div class="empty-feed">
+            <h3>Welcome to Linksy!</h3>
+            <p>Start following people to see their posts in your feed.</p>
+            <p>Check out the suggested users on the right to get started.</p>
+          </div>
+        <% } else if (posts.length === 0) { %>
+          <div class="empty-feed">
+            <h3>No recent posts</h3>
+            <p>The people you follow haven't shared anything recently.</p>
+            <p>Check back later for new content!</p>
+          </div>
+        <% } else { %>
+          <% posts.forEach(post => { %>
+            <article class="post-card" data-post-id="<%= post._id %>">
+              <div class="post-header">
+                <div class="post-user">
+                  <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar" />
+                  <div class="post-user-info">
+                    <span class="post-username"><%= post.user.name %></span>
+                    <span class="post-time"><%= post.timestamp %></span>
+                  </div>
+                </div>
+                <button class="post-menu" aria-label="Post menu">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                    <circle cx="12" cy="12" r="1"></circle>
+                    <circle cx="19" cy="12" r="1"></circle>
+                    <circle cx="5" cy="12" r="1"></circle>
+                  </svg>
+                </button>
+              </div>
+
+              <% if (post.image) { %>
+                <img src="<%= post.image %>" alt="Post image from <%= post.user.username %>" class="post-image" data-post-id="<%= post._id %>" />
+              <% } %>
+
+              <!-- Updated post actions section -->
+              <div class="post-actions">
+                <button class="post-action like-action" onclick="toggleLike('<%= post._id %>')">
+                  <svg class="like-icon <%= post.liked ? 'liked' : '' %>" viewBox="0 0 24 24">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                  <span class="like-count" onclick="showLikesModal('<%= post._id %>')"><%= post.likes %></span>
+                </button>
+                
+                <button class="post-action comment-action" onclick="toggleComments('<%= post._id %>')">
+                  <svg viewBox="0 0 24 24">
+                    <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h11c.55 0 1-.45 1-1z"/>
+                  </svg>
+                  <span class="comment-count"><%= post.comments ? post.comments.length : 0 %></span>
+                </button>
+              </div>
+
+              <% if (post.caption) { %>
+                <div class="post-caption">
+                  <span class="caption-username"><%= post.user.name %></span>
+                  <%= post.caption %>
+                </div>
+              <% } %>
+
+              <!-- Comments section (initially hidden) -->
+              <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
+                <div class="comment-input-container">
+                  <img src="<%= user.avatar %>" alt="Your avatar" class="comment-avatar">
+                  <input type="text" class="comment-input-field" placeholder="Add a comment..." 
+                      onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
+                  <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
+                </div>
+                <div class="comments-list" id="comments-list-<%= post._id %>">
+                  <!-- Comments will be loaded here -->
+                </div>
+              </div>
+            </article>
+          <% }) %>
+          
+          <!-- Caught up message -->
+          <div class="caught-up">
+            <div class="caught-up-icon">✨</div>
+            <h3>You're all caught up!</h3>
+            <p>You've seen all the recent posts from people you follow.</p>
+          </div>
+        <% } %>
       </div>
     </section>
 
@@ -1144,6 +1419,330 @@
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && createPostModal.classList.contains('active')) {
         closeModalFunction();
+      }
+    });
+    async function toggleLike(postId, event) {
+      if (event) {
+        event.stopPropagation();
+      }
+      
+      try {
+        const response = await fetch(`/posts/${postId}/like`, {
+          method: 'POST'
+        });
+        const data = await response.json();
+        
+        if (data.success) {
+          const likeIcon = document.querySelector(`[data-post-id="${postId}"] .like-icon`);
+          const likeCount = document.querySelector(`[data-post-id="${postId}"] .like-count`);
+          
+          if (data.liked) {
+            likeIcon.classList.add('liked');
+          } else {
+            likeIcon.classList.remove('liked');
+          }
+          
+          likeCount.textContent = data.likes;
+        }
+      } catch (error) {
+        console.error('Error toggling like:', error);
+      }
+    }
+
+    // Show likes modal
+    async function showLikesModal(postId) {
+      if (event) {
+        event.stopPropagation();
+      }
+      
+      // Create modal if it doesn't exist
+      let modal = document.getElementById('likesModal');
+      if (!modal) {
+        const modalHTML = `
+          <div id="likesModal" class="modal" style="display: none;">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 id="likesModalTitle">Likes</h3>
+                <span class="close-modal" onclick="closeLikesModal()">&times;</span>
+              </div>
+              <div class="modal-body" id="likesModalBody">
+                <!-- Likes list will be populated here -->
+              </div>
+            </div>
+          </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        modal = document.getElementById('likesModal');
+        
+        // Add modal styles if not already present
+        if (!document.getElementById('modal-styles')) {
+          const modalStyles = `
+            <style id="modal-styles">
+              .modal {
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.8);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .modal-content {
+                background: var(--surface);
+                border: 1px solid var(--border);
+                border-radius: 16px;
+                width: 90%;
+                max-width: 400px;
+                max-height: 600px;
+                overflow: hidden;
+              }
+              .modal-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px;
+                border-bottom: 1px solid var(--border);
+              }
+              .modal-header h3 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 700;
+                color: var(--text);
+              }
+              .close-modal {
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+                color: var(--text-muted);
+                transition: color 0.2s;
+              }
+              .close-modal:hover {
+                color: var(--text);
+              }
+              .modal-body {
+                padding: 0;
+                max-height: 500px;
+                overflow-y: auto;
+              }
+              .user-item {
+                display: flex;
+                align-items: center;
+                padding: 16px 20px;
+                border-bottom: 1px solid var(--border);
+                transition: background-color 0.2s;
+                cursor: pointer;
+              }
+              .user-item:hover {
+                background-color: var(--surface-hover);
+              }
+              .user-item:last-child {
+                border-bottom: none;
+              }
+              .user-item-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                margin-right: 12px;
+              }
+              .user-item-info {
+                flex: 1;
+              }
+              .user-item-name {
+                font-weight: 700;
+                font-size: 15px;
+                margin-bottom: 2px;
+                color: var(--text);
+              }
+              .user-item-username {
+                color: var(--text-muted);
+                font-size: 14px;
+              }
+              .modal-loading {
+                text-align: center;
+                padding: 40px;
+                color: var(--text-muted);
+              }
+              .modal-empty {
+                text-align: center;
+                padding: 40px;
+                color: var(--text-muted);
+              }
+            </style>
+          `;
+          document.head.insertAdjacentHTML('beforeend', modalStyles);
+        }
+      }
+      
+      const modalTitle = document.getElementById('likesModalTitle');
+      const modalBody = document.getElementById('likesModalBody');
+      
+      modalTitle.textContent = 'Likes';
+      modalBody.innerHTML = '<div class="modal-loading">Loading...</div>';
+      modal.style.display = 'flex';
+      
+      try {
+        const response = await fetch(`/posts/${postId}/likes`);
+        const data = await response.json();
+        
+        if (data.success) {
+          if (data.users.length === 0) {
+            modalBody.innerHTML = '<div class="modal-empty">No likes yet</div>';
+          } else {
+            modalBody.innerHTML = data.users.map(user => `
+              <div class="user-item" onclick="window.location.href='/user/${user.username}'">
+                <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
+                    alt="${user.name}" class="user-item-avatar">
+                <div class="user-item-info">
+                  <div class="user-item-name">${user.name}</div>
+                  <div class="user-item-username">@${user.username}</div>
+                </div>
+              </div>
+            `).join('');
+          }
+        } else {
+          modalBody.innerHTML = '<div class="modal-empty">Failed to load likes</div>';
+        }
+      } catch (error) {
+        console.error('Error loading likes:', error);
+        modalBody.innerHTML = '<div class="modal-empty">Error loading likes</div>';
+      }
+    }
+
+    function closeLikesModal() {
+      const modal = document.getElementById('likesModal');
+      if (modal) {
+        modal.style.display = 'none';
+      }
+    }
+
+    // Toggle comments visibility
+    async function toggleComments(postId) {
+      const commentsSection = document.getElementById(`comments-${postId}`);
+      const commentsList = document.getElementById(`comments-list-${postId}`);
+      
+      if (commentsSection.style.display === 'none') {
+        commentsSection.style.display = 'block';
+        await loadComments(postId);
+      } else {
+        commentsSection.style.display = 'none';
+      }
+    }
+
+    // Load comments for a post
+    async function loadComments(postId) {
+      const commentsList = document.getElementById(`comments-list-${postId}`);
+      commentsList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading comments...</div>';
+      
+      try {
+        const response = await fetch(`/posts/${postId}/comments`);
+        const data = await response.json();
+        
+        if (data.success) {
+          if (data.comments.length === 0) {
+            commentsList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">No comments yet</div>';
+          } else {
+            commentsList.innerHTML = data.comments.map(comment => `
+              <div class="comment-item" data-comment-id="${comment._id}">
+                <img src="${comment.user.avatar || 'https://picsum.photos/seed/' + comment.user.username + '/200/200'}" 
+                    alt="${comment.user.name}" class="comment-item-avatar">
+                <div class="comment-item-content">
+                  <div class="comment-item-header">
+                    <span class="comment-item-name">${comment.user.name}</span>
+                    <span class="comment-item-time">${formatTime(comment.createdAt)}</span>
+                  </div>
+                  <div class="comment-item-text">${comment.text}</div>
+                </div>
+              </div>
+            `).join('');
+          }
+        }
+      } catch (error) {
+        console.error('Error loading comments:', error);
+        commentsList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">Failed to load comments</div>';
+      }
+    }
+
+    // Add comment
+    async function addComment(postId) {
+      const input = document.querySelector(`#comments-${postId} .comment-input-field`);
+      const submitBtn = document.querySelector(`#comments-${postId} .comment-submit`);
+      const text = input.value.trim();
+      
+      if (!text) return;
+      
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Posting...';
+        
+        const response = await fetch(`/posts/${postId}/comment`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ text })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          input.value = '';
+          await loadComments(postId);
+          
+          // Update comment count
+          const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-count`);
+          commentCount.textContent = data.totalComments;
+        } else {
+          alert(data.error || 'Failed to add comment');
+        }
+      } catch (error) {
+        console.error('Error adding comment:', error);
+        alert('Failed to add comment');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Post';
+      }
+    }
+
+    // Handle comment keypress
+    function handleCommentKeypress(event, postId) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addComment(postId);
+      }
+    }
+
+    // Format time helper function
+    function formatTime(dateString) {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diff = now - date;
+      
+      const minutes = Math.floor(diff / 60000);
+      const hours = Math.floor(diff / 3600000);
+      const days = Math.floor(diff / 86400000);
+      
+      if (minutes < 1) return 'now';
+      if (minutes < 60) return `${minutes}m`;
+      if (hours < 24) return `${hours}h`;
+      return `${days}d`;
+    }
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(event) {
+      const likesModal = document.getElementById('likesModal');
+      if (event.target === likesModal) {
+        closeLikesModal();
+      }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeLikesModal();
       }
     });
   </script>
