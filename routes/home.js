@@ -31,42 +31,36 @@ router.get('/', requireAuth, async (req, res) => {
         .limit(20);
     }
 
-    // Smart suggestions: Get followers of people the user follows + users who follow the same people
-    let suggestions = [];
-    
-    if (followingIds.length > 0) {
-      // Get users who are followed by people the current user follows (mutual connections)
-      const mutualSuggestions = await User.find({
-        followers: { $in: followingIds },
-        _id: { $ne: req.session.userId, $nin: [...followingIds, ...user.followers || []] }
-      })
-      .select('username name avatar followers')
-      .limit(5);
+    // Smart suggestions: Only show followers and mutual connections
+  let suggestions = [];
 
-      // Get users who follow people the current user follows (common interests)
-      const commonInterestSuggestions = await User.find({
-        following: { $in: followingIds },
-        _id: { $ne: req.session.userId, $nin: [...followingIds, ...user.followers || []] }
-      })
-      .select('username name avatar following')
-      .limit(3);
+  // 1. Get users who follow the current user
+  const followers = await User.find({
+    following: req.session.userId,
+    _id: { $nin: followingIds } // Exclude users already being followed
+  })
+  .select('username name avatar followers following')
+  .limit(4);
 
-      // Combine and deduplicate suggestions
-      const allSuggestions = [...mutualSuggestions, ...commonInterestSuggestions];
-      const uniqueSuggestions = allSuggestions.filter((suggestion, index, self) => 
-        index === self.findIndex(s => s._id.toString() === suggestion._id.toString())
-      );
+  // 2. Get mutual connections (A follows B, B follows C, suggest C to A)
+  let mutualConnections = [];
+  if (followingIds.length > 0) {
+    // Find users who are followed by people the current user follows
+    // but exclude direct followers (already captured above)
+    mutualConnections = await User.find({
+      followers: { $in: followingIds },
+      _id: { 
+        $ne: req.session.userId, 
+        $nin: [...followingIds, ...followers.map(f => f._id)] 
+      },
+      following: { $ne: req.session.userId } // Exclude users who already follow current user
+    })
+    .select('username name avatar followers following')
+    .limit(4);
+  }
 
-      suggestions = uniqueSuggestions.slice(0, 8);
-    } else {
-      // If user follows no one, get popular users
-      suggestions = await User.find({
-        _id: { $ne: req.session.userId }
-      })
-      .select('username name avatar followers')
-      .sort({ 'followers.length': -1 })
-      .limit(8);
-    }
+  // Combine suggestions
+  suggestions = [...followers, ...mutualConnections].slice(0, 8);
 
     res.render('index', {
       user,
@@ -79,7 +73,7 @@ router.get('/', requireAuth, async (req, res) => {
       })),
       suggestions: suggestions.map(suggestion => ({
         ...suggestion.toObject(),
-        note: getNote(suggestion, user.following, followingIds)
+        note: getNote(suggestion, user, followingIds)
       })),
       isFollowingAny: followingIds.length > 0
     });
@@ -90,24 +84,22 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // Helper function to generate suggestion notes
-function getNote(suggestion, userFollowing, followingIds) {
+function getNote(suggestion, currentUser, followingIds) {
+  // Check if this user follows the current user
+  if (suggestion.following && suggestion.following.some(id => id.toString() === currentUser._id.toString())) {
+    return 'Follows you';
+  }
+  
+  // For mutual connections, show "Suggested for you"
   const mutualFollowers = suggestion.followers ? suggestion.followers.filter(id => 
     followingIds.some(followId => followId.toString() === id.toString())
   ).length : 0;
   
-  const mutualFollowing = suggestion.following ? suggestion.following.filter(id => 
-    followingIds.some(followId => followId.toString() === id.toString())
-  ).length : 0;
-
   if (mutualFollowers > 0) {
-    return mutualFollowers === 1 ? 'Followed by 1 person you follow' : `Followed by ${mutualFollowers} people you follow`;
-  } else if (mutualFollowing > 0) {
-    return mutualFollowing === 1 ? 'Follows 1 person you follow' : `Follows ${mutualFollowing} people you follow`;
-  } else if (suggestion.followers && suggestion.followers.length > 10) {
-    return 'Popular on Linksy';
-  } else {
     return 'Suggested for you';
   }
+  
+  // Fallback (shouldn't reach here with the new logic)
+  return 'Suggested for you';
 }
-
 module.exports = router;

@@ -961,6 +961,28 @@
       padding: 40px;
       color: #666666;
   }
+  .welcome-text {
+    text-align: center;
+    color: var(--text-secondary); 
+    max-width: 350px;
+    margin: 0 auto;
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.5;
+    gap: 6px;
+  }
+
+  .welcome-text h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text); /* primary text color */
+    margin-bottom: 8px;
+  }
+
+  .welcome-text p {
+    font-size: 1rem;
+    color: var(--text-secondary); /* subtle secondary text */
+    margin: 2px 0;
+  }
   </style>
 </head>
 <body>
@@ -988,9 +1010,15 @@
         <div id="feed" class="feed" aria-live="polite">
           <% if (!isFollowingAny) { %>
             <div class="empty-feed">
-              <h3>Welcome to Linksy!</h3>
-              <p>Start following people to see their posts in your feed.</p>
-              <p>Check out the suggested users on the right to get started.</p>
+              <svg xmlns="http://www.w3.org/2000/svg" class="empty-icon" viewBox="0 0 64 64" fill="none">
+                <circle cx="32" cy="32" r="32" fill="#1d9bf0" fill-opacity="0.1"/>
+                <path d="M32 16v32M16 32h32" stroke="#1d9bf0" stroke-width="4" stroke-linecap="round"/>
+              </svg>
+              <div class="welcome-text">
+                <h3>Welcome to Linksy!</h3>
+                <p>Start following people to see their posts in your feed.</p>
+                <p>Check out the suggested users on the right to get started.</p>
+              </div>
             </div>
           <% } else if (posts.length === 0) { %>
             <div class="empty-feed">
@@ -1083,71 +1111,27 @@
           </div>
           <div class="suggestions-list">
             <!-- Sample suggested users matching screenshot design -->
-            <div class="suggestion-item">
-              <div class="sug-user">
-                <img src="/placeholder.svg?height=40&width=40" alt="avril" class="sug-avatar" />
-                <div class="sug-meta">
-                  <span class="sug-name">avril</span>
-                  <span class="sug-note">Popular • Photography</span>
-                </div>
+            <div class="suggestions-list">
+                <% if (suggestions && suggestions.length > 0) { %>
+                  <% suggestions.forEach(suggestion => { %>
+                    <div class="suggestion-item">
+                      <div class="sug-user">
+                        <img src="<%= suggestion.avatar || 'https://picsum.photos/seed/' + suggestion.username + '/200/200' %>" 
+                            alt="<%= suggestion.username %>" class="sug-avatar" />
+                        <div class="sug-meta">
+                          <span class="sug-name"><%= suggestion.name || suggestion.username %></span>
+                          <span class="sug-note"><%= suggestion.note %></span>
+                        </div>
+                      </div>
+                      <button class="follow-btn" onclick="toggleFollow('<%= suggestion._id %>')">Follow</button>
+                    </div>
+                  <% }) %>
+                <% } else { %>
+                  <div style="text-align: center; color: var(--text-muted); padding: 20px;">
+                    No suggestions available
+                  </div>
+                <% } %>
               </div>
-              <button class="follow-btn" onclick="toggleFollow('avril')">Follow</button>
-            </div>
-            
-            <div class="suggestion-item">
-              <div class="sug-user">
-                <img src="/placeholder.svg?height=40&width=40" alt="bruno" class="sug-avatar" />
-                <div class="sug-meta">
-                  <span class="sug-name">bruno</span>
-                  <span class="sug-note">New to Linksy</span>
-                </div>
-              </div>
-              <button class="follow-btn" onclick="toggleFollow('bruno')">Follow</button>
-            </div>
-            
-            <div class="suggestion-item">
-              <div class="sug-user">
-                <img src="/placeholder.svg?height=40&width=40" alt="cora" class="sug-avatar" />
-                <div class="sug-meta">
-                  <span class="sug-name">cora</span>
-                  <span class="sug-note">Follows you</span>
-                </div>
-              </div>
-              <button class="follow-btn" onclick="toggleFollow('cora')">Follow</button>
-            </div>
-            
-            <div class="suggestion-item">
-              <div class="sug-user">
-                <img src="/placeholder.svg?height=40&width=40" alt="dylan" class="sug-avatar" />
-                <div class="sug-meta">
-                  <span class="sug-name">dylan</span>
-                  <span class="sug-note">Trending now</span>
-                </div>
-              </div>
-              <button class="follow-btn" onclick="toggleFollow('dylan')">Follow</button>
-            </div>
-            
-            <div class="suggestion-item">
-              <div class="sug-user">
-                <img src="/placeholder.svg?height=40&width=40" alt="elsa" class="sug-avatar" />
-                <div class="sug-meta">
-                  <span class="sug-name">elsa</span>
-                  <span class="sug-note">Suggested</span>
-                </div>
-              </div>
-              <button class="follow-btn" onclick="toggleFollow('elsa')">Follow</button>
-            </div>
-            
-            <div class="suggestion-item">
-              <div class="sug-user">
-                <img src="/placeholder.svg?height=40&width=40" alt="flora" class="sug-avatar" />
-                <div class="sug-meta">
-                  <span class="sug-name">flora</span>
-                  <span class="sug-note">For you</span>
-                </div>
-              </div>
-              <button class="follow-btn" onclick="toggleFollow('flora')">Follow</button>
-            </div>
           </div>
         </section>
       </aside>
@@ -1156,9 +1140,9 @@
 
   <script>
     // <CHANGE> Added toggle follow function for sidebar
-    async function toggleFollow(username) {
+    async function toggleFollow(userId) {
       try {
-        const response = await fetch(`/users/${username}/follow`, {
+        const response = await fetch(`/users/${userId}/follow`, {
           method: 'POST'
         });
         
