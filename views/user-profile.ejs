@@ -359,6 +359,156 @@
             padding: 40px;
             color: #8a8a8a;
         }
+        .post-actions {
+            display: flex;
+            gap: 20px;
+            padding: 12px 0;
+            border-bottom: 1px solid #2a2a2a;
+            margin-bottom: 12px;
+        }
+
+        .post-action {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #8a8a8a;
+            transition: color 0.2s;
+            padding: 8px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .post-action:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .post-action svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        .like-icon.liked {
+            color: #ff4458;
+            fill: #ff4458;
+        }
+
+        .like-action:hover .like-icon:not(.liked) {
+            color: #ff4458;
+        }
+
+        .comment-action:hover svg {
+            color: #1da1f2;
+        }
+
+        .comments-section {
+            border-top: 1px solid #2a2a2a;
+            padding-top: 12px;
+        }
+
+        .comment-input-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 12px;
+            background: #1a1a1a;
+            border-radius: 12px;
+        }
+
+        .comment-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .comment-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .comment-input::placeholder {
+            color: #8a8a8a;
+        }
+
+        .comment-submit {
+            background: #1da1f2;
+            border: none;
+            color: #ffffff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .comment-submit:hover {
+            background: #1991d1;
+        }
+
+        .comment-submit:disabled {
+            background: #3a3a3a;
+            cursor: not-allowed;
+        }
+
+        .comments-list {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 12px;
+            padding: 8px;
+            border-radius: 8px;
+            transition: background 0.2s;
+        }
+
+        .comment-item:hover {
+            background: #1a1a1a;
+        }
+
+        .comment-item-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .comment-item-content {
+            flex: 1;
+        }
+
+        .comment-item-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 4px;
+        }
+
+        .comment-item-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .comment-item-time {
+            color: #8a8a8a;
+            font-size: 12px;
+        }
+
+        .comment-item-text {
+            font-size: 14px;
+            line-height: 1.4;
+        }
     </style>
 </head>
 <body>
@@ -423,7 +573,7 @@
                     </div>
                 <% } else { %>
                     <% posts.forEach(post => { %>
-                        <div class="post">
+                        <div class="post" data-post-id="<%= post._id %>">
                             <div class="post-header">
                                 <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar">
                                 <div class="post-info">
@@ -439,6 +589,36 @@
                             <% if (post.image) { %>
                                 <img src="<%= post.image %>" alt="Post image" class="post-image">
                             <% } %>
+                            
+                            <!-- New post actions section -->
+                            <div class="post-actions">
+                                <div class="post-action like-action" onclick="toggleLike('<%= post._id %>')">
+                                    <svg class="like-icon <%= post.likes && post.likes.includes(currentUser._id) ? 'liked' : '' %>" viewBox="0 0 24 24">
+                                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                                    </svg>
+                                    <span class="like-count"><%= post.likes ? post.likes.length : 0 %></span>
+                                </div>
+                                
+                                <div class="post-action comment-action" onclick="toggleComments('<%= post._id %>')">
+                                    <svg viewBox="0 0 24 24">
+                                        <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h11c.55 0 1-.45 1-1z"/>
+                                    </svg>
+                                    <span class="comment-count"><%= post.comments ? post.comments.length : 0 %></span>
+                                </div>
+                            </div>
+                            
+                            <!-- Comments section (initially hidden) -->
+                            <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
+                                <div class="comment-input-container">
+                                    <img src="<%= currentUser.avatar %>" alt="Your avatar" class="comment-avatar">
+                                    <input type="text" class="comment-input" placeholder="Add a comment..." 
+                                        onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
+                                    <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
+                                </div>
+                                <div class="comments-list" id="comments-list-<%= post._id %>">
+                                    <!-- Comments will be loaded here -->
+                                </div>
+                            </div>
                         </div>
                     <% }) %>
                 <% } %>
@@ -562,6 +742,137 @@
             closeModal();
         }
     });
+    async function toggleLike(postId) {
+        try {
+            const response = await fetch(`/posts/${postId}/like`, {
+                method: 'POST'
+            });
+            const data = await response.json();
+            
+            if (data.success) {
+                const likeIcon = document.querySelector(`[data-post-id="${postId}"] .like-icon`);
+                const likeCount = document.querySelector(`[data-post-id="${postId}"] .like-count`);
+                
+                if (data.liked) {
+                    likeIcon.classList.add('liked');
+                } else {
+                    likeIcon.classList.remove('liked');
+                }
+                
+                likeCount.textContent = data.likes;
+            }
+        } catch (error) {
+            console.error('Error toggling like:', error);
+        }
+    }
+
+    // Comment functionality
+    async function toggleComments(postId) {
+        const commentsSection = document.getElementById(`comments-${postId}`);
+        const commentsList = document.getElementById(`comments-list-${postId}`);
+        
+        if (commentsSection.style.display === 'none') {
+            commentsSection.style.display = 'block';
+            await loadComments(postId);
+        } else {
+            commentsSection.style.display = 'none';
+        }
+    }
+
+    async function loadComments(postId) {
+        const commentsList = document.getElementById(`comments-list-${postId}`);
+        commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">Loading comments...</div>';
+        
+        try {
+            const response = await fetch(`/posts/${postId}/comments`);
+            const data = await response.json();
+            
+            if (data.success) {
+                if (data.comments.length === 0) {
+                    commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">No comments yet</div>';
+                } else {
+                    commentsList.innerHTML = data.comments.map(comment => `
+                        <div class="comment-item">
+                            <img src="${comment.user.avatar || 'https://picsum.photos/seed/' + comment.user.username + '/200/200'}" 
+                                alt="${comment.user.name}" class="comment-item-avatar">
+                            <div class="comment-item-content">
+                                <div class="comment-item-header">
+                                    <span class="comment-item-name">${comment.user.name}</span>
+                                    <span class="comment-item-time">${formatTime(comment.createdAt)}</span>
+                                </div>
+                                <div class="comment-item-text">${comment.text}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            }
+        } catch (error) {
+            console.error('Error loading comments:', error);
+            commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">Failed to load comments</div>';
+        }
+    }
+
+    async function addComment(postId) {
+        const input = document.querySelector(`#comments-${postId} .comment-input`);
+        const submitBtn = document.querySelector(`#comments-${postId} .comment-submit`);
+        const text = input.value.trim();
+        
+        if (!text) return;
+        
+        try {
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Posting...';
+            
+            const response = await fetch(`/posts/${postId}/comment`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ text })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                input.value = '';
+                await loadComments(postId);
+                
+                // Update comment count
+                const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-count`);
+                commentCount.textContent = data.totalComments;
+            } else {
+                alert(data.error || 'Failed to add comment');
+            }
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            alert('Failed to add comment');
+        } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Post';
+        }
+    }
+
+    function handleCommentKeypress(event, postId) {
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            addComment(postId);
+        }
+    }
+
+    function formatTime(dateString) {
+        const date = new Date(dateString);
+        const now = new Date();
+        const diff = now - date;
+        
+        const minutes = Math.floor(diff / 60000);
+        const hours = Math.floor(diff / 3600000);
+        const days = Math.floor(diff / 86400000);
+        
+        if (minutes < 1) return 'now';
+        if (minutes < 60) return `${minutes}m`;
+        if (hours < 24) return `${hours}h`;
+        return `${days}d`;
+    }
     </script>
 </body>
 </html>

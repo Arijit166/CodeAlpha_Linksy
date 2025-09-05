@@ -57,24 +57,67 @@ router.post('/posts/:id/like', requireAuth, async (req, res) => {
   }
 });
 
+// Add this route to get comments for a specific post
+router.get('/posts/:id/comments', requireAuth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id)
+      .populate('comments.user', 'username name avatar');
+    
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    
+    res.json({ 
+      success: true, 
+      comments: post.comments.map(comment => ({
+        _id: comment._id,
+        text: comment.text,
+        user: comment.user,
+        createdAt: comment.createdAt
+      }))
+    });
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// Modify the existing comment route to return user info
 router.post('/posts/:id/comment', requireAuth, async (req, res) => {
   try {
     const { text } = req.body;
+    
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: 'Comment text is required' });
+    }
+    
     const post = await Post.findById(req.params.id);
-   
+    
+    if (!post) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+    
     post.comments.push({
       user: req.session.userId,
-      text
+      text: text.trim()
     });
-   
+    
     await post.save();
-   
+    
     const populatedPost = await Post.findById(req.params.id)
-      .populate('comments.user', 'username');
-   
+      .populate('comments.user', 'username name avatar');
+    
+    const newComment = populatedPost.comments[populatedPost.comments.length - 1];
+    
     res.json({
       success: true,
-      comment: populatedPost.comments[populatedPost.comments.length - 1]
+      comment: {
+        _id: newComment._id,
+        text: newComment.text,
+        user: newComment.user,
+        createdAt: newComment.createdAt
+      },
+      totalComments: populatedPost.comments.length
     });
   } catch (error) {
     console.error('Error adding comment:', error);
