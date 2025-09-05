@@ -509,6 +509,18 @@
             font-size: 14px;
             line-height: 1.4;
         }
+        .like-action {
+            position: relative;
+        }
+
+        .like-icon {
+            cursor: pointer;
+        }
+
+        .like-count {
+            cursor: pointer;
+            user-select: none;
+        }
     </style>
 </head>
 <body>
@@ -592,11 +604,12 @@
                             
                             <!-- New post actions section -->
                             <div class="post-actions">
-                                <div class="post-action like-action" onclick="toggleLike('<%= post._id %>')">
-                                    <svg class="like-icon <%= post.likes && post.likes.includes(currentUser._id) ? 'liked' : '' %>" viewBox="0 0 24 24">
+                                <div class="post-action like-action">
+                                    <svg class="like-icon <%= post.likes && post.likes.includes(profileUser._id || currentUser._id) ? 'liked' : '' %>" 
+                                        viewBox="0 0 24 24" onclick="toggleLike('<%= post._id %>')">
                                         <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
                                     </svg>
-                                    <span class="like-count"><%= post.likes ? post.likes.length : 0 %></span>
+                                    <span class="like-count" onclick="showLikesModal('<%= post._id %>')"><%= post.likes ? post.likes.length : 0 %></span>
                                 </div>
                                 
                                 <div class="post-action comment-action" onclick="toggleComments('<%= post._id %>')">
@@ -633,6 +646,17 @@
             </div>
             <div class="modal-body" id="modalBody">
                 <!-- User list will be populated here -->
+            </div>
+        </div>
+    </div>
+    <div id="likesModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="likesModalTitle">Likes</h3>
+                <span class="close-modal" onclick="closeLikesModal()">&times;</span>
+            </div>
+            <div class="modal-body" id="likesModalBody">
+                <!-- Likes list will be populated here -->
             </div>
         </div>
     </div>
@@ -687,6 +711,49 @@
                 }
             });
         }
+        async function showLikesModal(postId) {
+            if (event) {
+                event.stopPropagation();
+            }
+            const modal = document.getElementById('likesModal');
+            const modalTitle = document.getElementById('likesModalTitle');
+            const modalBody = document.getElementById('likesModalBody');
+            
+            modalTitle.textContent = 'Likes';
+            modalBody.innerHTML = '<div class="modal-loading">Loading...</div>';
+            modal.style.display = 'flex';
+            
+            try {
+                const response = await fetch(`/posts/${postId}/likes`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.users.length === 0) {
+                        modalBody.innerHTML = '<div class="modal-empty">No likes yet</div>';
+                    } else {
+                        modalBody.innerHTML = data.users.map(user => `
+                            <div class="user-item" onclick="window.location.href='/users/${user.username}'">
+                                <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
+                                    alt="${user.name}" class="user-item-avatar">
+                                <div class="user-item-info">
+                                    <div class="user-item-name">${user.name}</div>
+                                    <div class="user-item-username">@${user.username}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    modalBody.innerHTML = '<div class="modal-empty">Failed to load likes</div>';
+                }
+            } catch (error) {
+                console.error('Error loading likes:', error);
+                modalBody.innerHTML = '<div class="modal-empty">Error loading likes</div>';
+            }
+        }
+
+        function closeLikesModal() {
+            document.getElementById('likesModal').style.display = 'none';
+        }
         async function showFollowModal(type, userId) {
         const modal = document.getElementById('followModal');
         const modalTitle = document.getElementById('modalTitle');
@@ -728,11 +795,15 @@
         document.getElementById('followModal').style.display = 'none';
     }
 
-    // Close modal when clicking outside of it
     window.addEventListener('click', function(event) {
-        const modal = document.getElementById('followModal');
-        if (event.target === modal) {
+        const followModal = document.getElementById('followModal');
+        const likesModal = document.getElementById('likesModal');
+        
+        if (event.target === followModal) {
             closeModal();
+        }
+        if (event.target === likesModal) {
+            closeLikesModal();
         }
     });
 
@@ -740,9 +811,14 @@
     document.addEventListener('keydown', function(event) {
         if (event.key === 'Escape') {
             closeModal();
+            closeLikesModal()
         }
     });
-    async function toggleLike(postId) {
+    async function toggleLike(postId, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        
         try {
             const response = await fetch(`/posts/${postId}/like`, {
                 method: 'POST'

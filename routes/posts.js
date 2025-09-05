@@ -37,6 +37,23 @@ router.post('/create-post', requireAuth, async (req, res) => {
   }
 });
 
+// Get likes for a specific post
+router.get('/posts/:id/likes', requireAuth, async (req, res) => {
+  try {
+    const post = await Post.findById(req.params.id)
+      .populate('likes', 'name username avatar');
+    
+    if (!post) {
+      return res.status(404).json({ success: false, error: 'Post not found' });
+    }
+    
+    res.json({ success: true, users: post.likes });
+  } catch (error) {
+    console.error('Error fetching likes:', error);
+    res.status(500).json({ success: false, error: 'Server error' });
+  }
+});
+
 // Post interaction routes
 router.post('/posts/:id/like', requireAuth, async (req, res) => {
   try {
