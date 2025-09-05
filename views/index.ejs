@@ -5,6 +5,329 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>linksy • Home</title>
   <style>
+    :root {
+      --bg: #0a0a0a;
+      --surface: #1a1a1a;
+      --surface-light: #2a2a2a;
+      --surface-hover: #2d2d2d;
+      --text: #ffffff;
+      --text-secondary: #b3b3b3;
+      --text-muted: #666666;
+      --border: #333333;
+      --border-light: #404040;
+      --primary: #1d9bf0;
+      --primary-hover: #1a8cd8;
+      --primary-glow: rgba(29, 155, 240, 0.3);
+      --heart: #f91880;
+      --heart-hover: #e11d74;
+      --success: #00ba7c;
+      --glass-bg: rgba(26, 26, 26, 0.8);
+      --accent-gradient: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--surface); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb { 
+      background: linear-gradient(45deg, var(--primary), var(--heart));
+      border-radius: 3px;
+      transition: all 0.3s ease;
+    }
+    ::-webkit-scrollbar-thumb:hover { 
+      background: linear-gradient(45deg, var(--primary-hover), var(--heart-hover));
+    }
+
+    /* <CHANGE> Added welcome banner styles matching the screenshot */
+    .welcome-banner {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 24px 0;
+      margin-top: 70px;
+      position: sticky;
+      top: 70px;
+      z-index: 999;
+    }
+
+    .welcome-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .welcome-content {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .welcome-title {
+      font-size: 24px;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .welcome-subtitle {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin: 0;
+    }
+
+    .welcome-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: var(--primary);
+      border-radius: 50%;
+      color: white;
+      opacity: 0.8;
+    }
+
+    /* <CHANGE> Updated main layout to match screenshot with proper flexbox */
+    .main-layout {
+      display: flex;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 100px;
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    .main-feed {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .feed { 
+      display: flex; 
+      flex-direction: column; 
+      gap: 28px; 
+    }
+
+    /* <CHANGE> Updated sidebar to be fixed and match screenshot design */
+    .sidebar-container {
+      width: 320px;
+      flex-shrink: 0;
+      height: fit-content;
+      position: sticky;
+      top: 180px;
+      max-height: calc(100vh - 200px);
+    }
+
+    .suggestions {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      max-height: 100%;
+    }
+
+    .suggestions-header {
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      padding: 20px 20px 16px; 
+      border-bottom: 1px solid var(--border);
+      background: var(--glass-bg);
+      flex-shrink: 0;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    .suggestions-title { 
+      font-size: 18px; 
+      font-weight: 800; 
+      letter-spacing: -0.3px;
+      background: var(--accent-gradient);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .suggestions-list { 
+      padding: 12px; 
+      display: flex; 
+      flex-direction: column; 
+      gap: 8px;
+      overflow-y: auto;
+      flex: 1;
+      scrollbar-width: thin;
+      scrollbar-color: var(--primary) var(--surface);
+    }
+
+    .suggestions-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .suggestions-list::-webkit-scrollbar-track {
+      background: var(--surface-light);
+      border-radius: 2px;
+    }
+
+    .suggestions-list::-webkit-scrollbar-thumb {
+      background: var(--primary);
+      border-radius: 2px;
+      transition: background 0.3s ease;
+    }
+
+    .suggestions-list::-webkit-scrollbar-thumb:hover {
+      background: var(--primary-hover);
+    }
+
+    .suggestion-item {
+      display: flex; 
+      align-items: center; 
+      justify-content: space-between;
+      gap: 12px; 
+      padding: 14px; 
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .suggestion-item::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+      transition: left 0.5s ease;
+    }
+
+    .suggestion-item:hover::before {
+      left: 100%;
+    }
+
+    .suggestion-item:hover { 
+      background: var(--surface-hover);
+      transform: translateX(4px);
+    }
+
+    .sug-user { 
+      display: flex; 
+      align-items: center; 
+      gap: 12px; 
+      min-width: 0; 
+    }
+
+    .sug-avatar { 
+      width: 40px; 
+      height: 40px; 
+      border-radius: 50%; 
+      object-fit: cover; 
+      flex-shrink: 0;
+      border: 2px solid var(--border);
+      transition: all 0.3s ease;
+    }
+
+    .suggestion-item:hover .sug-avatar {
+      border-color: var(--primary);
+      transform: scale(1.05);
+    }
+
+    .sug-meta { 
+      display: flex; 
+      flex-direction: column; 
+      min-width: 0; 
+    }
+
+    .sug-name { 
+      font-size: 14px; 
+      font-weight: 700; 
+      color: var(--text); 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      white-space: nowrap;
+      letter-spacing: -0.2px;
+    }
+
+    .sug-note { 
+      font-size: 12px; 
+      color: var(--text-muted); 
+      overflow: hidden; 
+      text-overflow: ellipsis; 
+      white-space: nowrap;
+      margin-top: 1px;
+    }
+
+    .follow-btn {
+      padding: 8px 16px; 
+      border-radius: 20px; 
+      font-size: 13px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      border: 1px solid var(--border);
+      background: var(--primary); 
+      color: #fff; 
+      transition: all .3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .follow-btn::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      background: rgba(255,255,255,0.2);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      transform: translate(-50%, -50%);
+    }
+
+    .follow-btn:hover::before {
+      width: 100%;
+      height: 100%;
+    }
+
+    .follow-btn:hover { 
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px var(--primary-glow);
+    }
+
+    .follow-btn.following {
+      background: transparent; 
+      color: var(--success);
+      border-color: var(--success);
+    }
+
+    .follow-btn.following:hover {
+      background: rgba(0, 186, 124, 0.1);
+      transform: translateY(-1px);
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Inter", sans-serif;
       background: var(--bg);
@@ -126,451 +449,6 @@
 
     .post-actions {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px 8px;
-    }
-    .post-actions-left { display: flex; align-items: center; gap: 20px; }
-
-    .action-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 10px;
-      border-radius: 50%;
-      transition: all 0.3s ease;
-      position: relative;
-    }
-    .action-btn:hover { 
-      background: var(--surface-hover);
-      transform: scale(1.1);
-    }
-
-    .action-icon {
-      width: 26px;
-      height: 26px;
-      stroke: var(--text);
-      fill: none;
-      stroke-width: 1.5;
-      transition: all 0.3s ease;
-    }
-
-    .like-icon { transition: all 0.3s ease; }
-    .action-btn.liked .like-icon { 
-      fill: var(--heart); 
-      stroke: var(--heart);
-      transform: scale(1.1);
-    }
-    .action-btn.liked:hover {
-      background: rgba(249, 24, 128, 0.1);
-    }
-
-    @keyframes likeAnimation { 
-      0%{transform:scale(1)} 
-      50%{transform:scale(1.3)} 
-      100%{transform:scale(1)} 
-    }
-    .action-btn.liked { animation: likeAnimation .4s ease; }
-
-    .post-likes { 
-      font-size: 15px; 
-      font-weight: 700; 
-      padding: 0 20px 10px; 
-      color: var(--text);
-      letter-spacing: -0.2px;
-    }
-
-    .post-caption { 
-      padding: 0 20px 10px; 
-      font-size: 15px; 
-      color: var(--text); 
-      line-height: 1.5; 
-    }
-    .caption-username { 
-      font-weight: 700; 
-      margin-right: 6px;
-      color: var(--primary);
-    }
-
-    .post-comments { padding: 0 20px 16px; }
-    .view-comments {
-      background: none; 
-      border: none; 
-      color: var(--text-muted); 
-      cursor: pointer; 
-      font-size: 14px; 
-      margin-bottom: 6px;
-      transition: color 0.2s ease;
-    }
-    .view-comments:hover {
-      color: var(--text-secondary);
-    }
-
-    .comment { 
-      font-size: 14px; 
-      color: var(--text); 
-      margin-bottom: 6px; 
-      line-height: 1.4;
-    }
-    .comment-username { 
-      font-weight: 700; 
-      margin-right: 6px;
-      color: var(--primary);
-    }
-
-    .add-comment {
-      display: flex; 
-      align-items: center; 
-      padding: 16px 20px; 
-      border-top: 1px solid var(--border);
-      background: var(--glass-bg);
-    }
-    .comment-input {
-      flex: 1; 
-      background: none; 
-      border: none; 
-      color: var(--text); 
-      font-size: 14px; 
-      outline: none; 
-      padding: 10px 0;
-    }
-    .comment-input::placeholder { color: var(--text-muted); }
-    .post-comment-btn {
-      background: none; 
-      border: none; 
-      color: var(--primary); 
-      font-weight: 700; 
-      cursor: pointer; 
-      font-size: 14px; 
-      opacity: .4; 
-      transition: all .3s ease;
-      padding: 8px 12px;
-      border-radius: 6px;
-    }
-    .post-comment-btn.active { 
-      opacity: 1;
-      background: rgba(29, 155, 240, 0.1);
-    }
-    .post-comment-btn:hover.active {
-      background: rgba(29, 155, 240, 0.2);
-    }
-
-    /* --- CORRECTED LAYOUT STYLES START --- */
-    
-    .welcome-banner {
-      background: linear-gradient(135deg, var(--surface) 0%, var(--surface-light) 100%);
-      border-bottom: 1px solid var(--border);
-      padding: 20px 0;
-      margin-top: 70px;
-      /* Making the banner sticky below the navbar */
-      position: sticky;
-      top: 70px;
-      z-index: 999;
-    }
-    
-    /* Main layout now uses flexbox to manage children */
-    .main-layout {
-      display: flex;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 32px 24px 100px;
-      gap: 32px;
-      align-items: flex-start;
-    }
-
-    /* The feed will grow to fill available space */
-    .main-feed {
-      flex: 1;
-      min-width: 0; /* Prevents flexbox overflow issues */
-    }
-
-    /* Updated sidebar container styles */
-    .sidebar-container {
-    width: 320px;
-    flex-shrink: 0;
-    height: fit-content;
-    position: sticky;
-    top: 180px; /* Same as before: navbar (70px) + banner (~86px) + padding (24px) */
-    max-height: calc(100vh - 200px); /* Leave some space from viewport edges */
-    }
-
-    /* The suggestions component with independent scrolling */
-    .suggestions {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-    display: flex;
-    flex-direction: column;
-    max-height: 100%; /* Fill the container height */
-    }
-
-    /* Keep the header fixed at the top of the suggestions box */
-    .suggestions-header {
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between;
-    padding: 20px 20px 16px; 
-    border-bottom: 1px solid var(--border);
-    background: var(--glass-bg);
-    flex-shrink: 0; /* Prevent header from shrinking */
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    }
-
-    /* Make the suggestions list scrollable */
-    .suggestions-list { 
-    padding: 12px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 8px;
-    overflow-y: auto; /* Enable vertical scrolling */
-    flex: 1; /* Take remaining space */
-    scrollbar-width: thin; /* For Firefox */
-    scrollbar-color: var(--primary) var(--surface); /* For Firefox */
-    }
-
-    /* Custom scrollbar for the suggestions list */
-    .suggestions-list::-webkit-scrollbar {
-    width: 4px;
-    }
-
-    .suggestions-list::-webkit-scrollbar-track {
-    background: var(--surface-light);
-    border-radius: 2px;
-    }
-
-    .suggestions-list::-webkit-scrollbar-thumb {
-    background: var(--primary);
-    border-radius: 2px;
-    transition: background 0.3s ease;
-    }
-
-    .suggestions-list::-webkit-scrollbar-thumb:hover {
-    background: var(--primary-hover);
-    }
-
-    .suggestions-title { 
-      font-size: 16px; 
-      font-weight: 800; 
-      letter-spacing: -0.3px;
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .suggestions-list { 
-      padding: 12px; 
-      display: flex; 
-      flex-direction: column; 
-      gap: 8px; 
-    }
-
-    .suggestion-item {
-      display: flex; 
-      align-items: center; 
-      justify-content: space-between;
-      gap: 12px; 
-      padding: 14px; 
-      border-radius: 12px;
-      transition: all 0.3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .suggestion-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-      transition: left 0.5s ease;
-    }
-
-    .suggestion-item:hover::before {
-      left: 100%;
-    }
-
-    .suggestion-item:hover { 
-      background: var(--surface-hover);
-      transform: translateX(4px);
-    }
-
-    .sug-user { 
-      display: flex; 
-      align-items: center; 
-      gap: 12px; 
-      min-width: 0; 
-    }
-
-    .sug-avatar { 
-      width: 40px; 
-      height: 40px; 
-      border-radius: 50%; 
-      object-fit: cover; 
-      flex-shrink: 0;
-      border: 2px solid var(--border);
-      transition: all 0.3s ease;
-    }
-
-    .suggestion-item:hover .sug-avatar {
-      border-color: var(--primary);
-      transform: scale(1.05);
-    }
-
-    .sug-meta { 
-      display: flex; 
-      flex-direction: column; 
-      min-width: 0; 
-    }
-
-    .sug-name { 
-      font-size: 14px; 
-      font-weight: 700; 
-      color: var(--text); 
-      overflow: hidden; 
-      text-overflow: ellipsis; 
-      white-space: nowrap;
-      letter-spacing: -0.2px;
-    }
-
-    .sug-note { 
-      font-size: 12px; 
-      color: var(--text-muted); 
-      overflow: hidden; 
-      text-overflow: ellipsis; 
-      white-space: nowrap;
-      margin-top: 1px;
-    }
-
-    .follow-btn {
-      padding: 8px 16px; 
-      border-radius: 10px; 
-      font-size: 13px; 
-      font-weight: 700; 
-      cursor: pointer; 
-      border: 1px solid var(--border);
-      background: var(--primary); 
-      color: #fff; 
-      transition: all .3s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .follow-btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      background: rgba(255,255,255,0.2);
-      border-radius: 50%;
-      transition: all 0.3s ease;
-      transform: translate(-50%, -50%);
-    }
-
-    .follow-btn:hover::before {
-      width: 100%;
-      height: 100%;
-    }
-
-    .follow-btn:hover { 
-      background: var(--primary-hover);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px var(--primary-glow);
-    }
-
-    .follow-btn.following {
-      background: transparent; 
-      color: var(--success);
-      border-color: var(--success);
-    }
-
-    .follow-btn.following:hover {
-      background: rgba(0, 186, 124, 0.1);
-      transform: translateY(-1px);
-    }
-
-    /* Floating heart animation */
-    .floating-heart {
-      position: fixed;
-      font-size: 120px;
-      color: var(--heart);
-      pointer-events: none;
-      animation: floatHeart 1.2s ease-out forwards;
-      z-index: 3000;
-      left: 0; 
-      top: 0; 
-      transform: translate(-50%, -50%);
-      filter: drop-shadow(0 0 10px var(--heart));
-    }
-    
-    @keyframes floatHeart {
-      0% { 
-        opacity: 0; 
-        transform: translate(-50%, -50%) scale(0) rotate(0deg); 
-      }
-      15% { 
-        opacity: 1; 
-        transform: translate(-50%, -50%) scale(1.3) rotate(-10deg); 
-      }
-      100% { 
-        opacity: 0; 
-        transform: translate(-50%, -80%) scale(0.6) rotate(10deg); 
-      }
-    }
-
-    .welcome-container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 0 24px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .welcome-content {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .welcome-title {
-      font-size: 20px;
-      font-weight: 800;
-      color: var(--text);
-      letter-spacing: -0.3px;
-      background: var(--accent-gradient);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .welcome-subtitle {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin: 0;
-    }
-
-    .welcome-icon {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 40px;
-      height: 40px;
-      background: var(--primary);
-      border-radius: 50%;
-      color: white;
-      opacity: 0.8;
-    }
-    .post-actions {
-      display: flex;
       gap: 20px;
       padding: 12px 20px;
       border-bottom: 1px solid var(--border);
@@ -604,149 +482,39 @@
 
     .like-icon.liked {
       color: var(--heart);
-      fill: var(--heart);
-    }
-
-    .like-action:hover .like-icon:not(.liked) {
-      color: var(--heart);
-    }
-
-    .comment-action:hover svg {
-      color: var(--primary);
-    }
-
-    .comments-section {
-      border-top: 1px solid var(--border);
-      padding-top: 12px;
-      margin-top: 12px;
-    }
-
-    .comment-input-container {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-      padding: 12px 20px;
-      background: var(--glass-bg);
-      border-radius: 12px;
-      margin: 12px 20px;
-    }
-
-    .comment-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .comment-input-field {
-      flex: 1;
-      background: transparent;
-      border: none;
-      color: var(--text);
-      font-size: 14px;
-      outline: none;
-    }
-
-    .comment-input-field::placeholder {
-      color: var(--text-muted);
-    }
-
-    .comment-submit {
-      background: var(--primary);
-      border: none;
-      color: #ffffff;
-      padding: 6px 16px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-
-    .comment-submit:hover {
-      background: var(--primary-hover);
-    }
-
-    .comment-submit:disabled {
-      background: var(--surface);
-      cursor: not-allowed;
-      opacity: 0.6;
-    }
-
-    .comments-list {
-      max-height: 400px;
-      overflow-y: auto;
-      padding: 0 20px;
-    }
-
-    .comment-item {
-      display: flex;
-      gap: 12px;
-      margin-bottom: 12px;
-      padding: 8px;
-      border-radius: 8px;
-      transition: background 0.2s;
-    }
-
-    .comment-item:hover {
-      background: var(--surface-hover);
-    }
-
-    .comment-item-avatar {
-      width: 32px;
-      height: 32px;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .comment-item-content {
-      flex: 1;
-    }
-
-    .comment-item-header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 4px;
-    }
-
-    .comment-item-name {
-      font-weight: 600;
-      font-size: 14px;
-      color: var(--text);
-    }
-
-    .comment-item-time {
-      color: var(--text-muted);
-      font-size: 12px;
-    }
-
-    .comment-item-text {
-      font-size: 14px;
-      line-height: 1.4;
-      color: var(--text);
-    }
-
-    /* Empty state styles */
-    .empty-feed {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-muted);
-    }
-
-    .empty-feed h3 {
-      font-size: 24px;
-      margin-bottom: 12px;
       color: var(--text-secondary);
     }
 
-    .empty-feed p {
-      font-size: 16px;
-      line-height: 1.5;
-      margin-bottom: 24px;
+    .empty-feed {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      text-align: center;
+      color: var(--text-secondary);
     }
 
+    .empty-feed svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 16px;
+      fill: var(--accent);
+      opacity: 0.8;
+    }
+
+    .empty-feed h2 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+
+    .empty-feed p {
+      font-size: 0.95rem;
+      max-width: 320px;
+      line-height: 1.5;
+    }
     .caught-up {
       text-align: center;
       padding: 40px 20px;
@@ -770,696 +538,532 @@
     .caught-up p {
       font-size: 14px;
     }
+
+    /* <CHANGE> Added responsive design for mobile */
+    @media (max-width: 768px) {
+      .main-layout {
+        flex-direction: column;
+        padding: 16px;
+        gap: 20px;
+      }
+      
+      .sidebar-container {
+        width: 100%;
+        position: static;
+        max-height: none;
+      }
+      
+      .welcome-banner {
+        margin-top: 60px;
+        top: 60px;
+      }
+    }
+    .like-icon.liked {
+      color: #ff4458;
+      fill: #ff4458;
+    }
+
+    .like-action:hover .like-icon:not(.liked) {
+      color: #ff4458;
+    }
+
+    .comment-action:hover svg {
+      color: #1da1f2;
+    }
+
+    .like-action {
+      position: relative;
+    }
+
+    .like-icon {
+      cursor: pointer;
+    }
+
+    .like-count {
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .comments-section {
+      border-top: 1px solid #333333;
+      padding-top: 12px;
+      margin-top: 12px;
+    }
+
+    .comment-input-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 12px;
+      background: #1a1a1a;
+      border-radius: 12px;
+    }
+
+    .comment-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .comment-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 14px;
+      outline: none;
+    }
+
+    .comment-input::placeholder {
+      color: #666666;
+    }
+
+    .comment-submit {
+      background: #1d9bf0;
+      border: none;
+      color: #ffffff;
+      padding: 6px 16px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .comment-submit:hover {
+      background: #1a8cd8;
+    }
+
+    .comment-submit:disabled {
+      background: #666666;
+      cursor: not-allowed;
+    }
+
+    .comments-list {
+      max-height: 300px;
+      overflow-y: auto;
+      scrollbar-width: thin;
+      scrollbar-color: #1d9bf0 #2a2a2a;
+    }
+
+    .comments-list::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .comments-list::-webkit-scrollbar-track {
+      background: #2a2a2a;
+      border-radius: 2px;
+    }
+
+    .comments-list::-webkit-scrollbar-thumb {
+      background: #1d9bf0;
+      border-radius: 2px;
+    }
+
+    .comment-item {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+      padding: 8px;
+      border-radius: 8px;
+      transition: background 0.2s;
+    }
+
+    .comment-item:hover {
+      background: #1a1a1a;
+    }
+
+    .comment-item-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .comment-item-content {
+      flex: 1;
+    }
+
+    .comment-item-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .comment-item-name {
+      font-weight: 600;
+      font-size: 14px;
+      color: #ffffff;
+    }
+
+    .comment-item-time {
+      color: #666666;
+      font-size: 12px;
+    }
+
+    .comment-item-text {
+      font-size: 14px;
+      line-height: 1.4;
+      color: #ffffff;
+    }
+
+    .comment-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .reply-btn {
+      background: none;
+      border: none;
+      color: #666666;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .reply-btn:hover {
+      color: #1d9bf0;
+    }
+
+    .replies-container {
+      margin-top: 12px;
+      margin-left: 44px;
+      border-left: 2px solid #333333;
+      padding-left: 12px;
+    }
+
+    .reply-item {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+      padding: 6px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .reply-item:hover {
+      background: #1a1a1a;
+    }
+
+    .reply-item-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .reply-item-content {
+      flex: 1;
+    }
+
+    .reply-item-header {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 2px;
+    }
+
+    .reply-item-name {
+      font-weight: 600;
+      font-size: 12px;
+      color: #ffffff;
+    }
+
+    .reply-item-time {
+      color: #666666;
+      font-size: 11px;
+    }
+
+    .reply-item-text {
+      font-size: 13px;
+      line-height: 1.4;
+      color: #ffffff;
+    }
+
+    .reply-input-container {
+      display: none;
+      margin-top: 8px;
+      margin-left: 44px;
+      padding: 8px;
+      background: #1a1a1a;
+      border-radius: 8px;
+    }
+
+    .reply-input-container.show {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reply-input-avatar {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .reply-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      color: #ffffff;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .reply-input::placeholder {
+      color: #666666;
+    }
+
+    .reply-submit {
+      background: #1d9bf0;
+      border: none;
+      color: #ffffff;
+      padding: 4px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .reply-submit:hover {
+      background: #1a8cd8;
+    }
+
+    .reply-submit:disabled {
+      background: #666666;
+      cursor: not-allowed;
+    }
+
+    .show-replies-btn {
+      background: none;
+      border: none;
+      color: #666666;
+      font-size: 12px;
+      cursor: pointer;
+      margin-top: 4px;
+      transition: color 0.2s;
+    }
+
+    .show-replies-btn:hover {
+      color: #ffffff;
+    }
+    .modal {
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+  }
+
+  .modal-content {
+      background: #1a1a1a;
+      border: 1px solid #333333;
+      border-radius: 16px;
+      width: 90%;
+      max-width: 400px;
+      max-height: 600px;
+      overflow: hidden;
+  }
+
+  .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px;
+      border-bottom: 1px solid #333333;
+  }
+
+  .modal-header h3 {
+      margin: 0;
+      font-size: 20px;
+      font-weight: 700;
+  }
+
+  .close-modal {
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      color: #666666;
+      transition: color 0.2s;
+  }
+
+  .close-modal:hover {
+      color: #ffffff;
+  }
+
+  .modal-body {
+      padding: 0;
+      max-height: 500px;
+      overflow-y: auto;
+  }
+
+  .user-item {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid #333333;
+      transition: background-color 0.2s;
+      cursor: pointer;
+  }
+
+  .user-item:hover {
+      background-color: #2a2a2a;
+  }
+
+  .user-item:last-child {
+      border-bottom: none;
+  }
+
+  .user-item-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-right: 12px;
+  }
+
+  .user-item-info {
+      flex: 1;
+  }
+
+  .user-item-name {
+      font-weight: 700;
+      font-size: 15px;
+      margin-bottom: 2px;
+  }
+
+  .user-item-username {
+      color: #666666;
+      font-size: 14px;
+  }
+
+  .modal-loading {
+      text-align: center;
+      padding: 40px;
+      color: #666666;
+  }
+
+  .modal-empty {
+      text-align: center;
+      padding: 40px;
+      color: #666666;
+  }
   </style>
 </head>
 <body>
   <%- include('../partials/nav') %>
-  <main>
-    
-    <section aria-label="Feed" class="main-feed">
-      <div id="feed" class="feed" aria-live="polite">
-        <% if (!isFollowingAny) { %>
-          <div class="empty-feed">
-            <h3>Welcome to Linksy!</h3>
-            <p>Start following people to see their posts in your feed.</p>
-            <p>Check out the suggested users on the right to get started.</p>
-          </div>
-        <% } else if (posts.length === 0) { %>
-          <div class="empty-feed">
-            <h3>No recent posts</h3>
-            <p>The people you follow haven't shared anything recently.</p>
-            <p>Check back later for new content!</p>
-          </div>
-        <% } else { %>
-          <% posts.forEach(post => { %>
-            <article class="post-card" data-post-id="<%= post._id %>">
-              <div class="post-header">
-                <div class="post-user">
-                  <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar" />
-                  <div class="post-user-info">
-                    <span class="post-username"><%= post.user.name %></span>
-                    <span class="post-time"><%= post.timestamp %></span>
-                  </div>
-                </div>
-                <button class="post-menu" aria-label="Post menu">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                    <circle cx="12" cy="12" r="1"></circle>
-                    <circle cx="19" cy="12" r="1"></circle>
-                    <circle cx="5" cy="12" r="1"></circle>
-                  </svg>
-                </button>
-              </div>
-
-              <% if (post.image) { %>
-                <img src="<%= post.image %>" alt="Post image from <%= post.user.username %>" class="post-image" data-post-id="<%= post._id %>" />
-              <% } %>
-
-              <!-- Updated post actions section -->
-              <div class="post-actions">
-                <button class="post-action like-action" onclick="toggleLike('<%= post._id %>')">
-                  <svg class="like-icon <%= post.liked ? 'liked' : '' %>" viewBox="0 0 24 24">
-                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-                  </svg>
-                  <span class="like-count" onclick="showLikesModal('<%= post._id %>')"><%= post.likes %></span>
-                </button>
-                
-                <button class="post-action comment-action" onclick="toggleComments('<%= post._id %>')">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h11c.55 0 1-.45 1-1z"/>
-                  </svg>
-                  <span class="comment-count"><%= post.comments ? post.comments.length : 0 %></span>
-                </button>
-              </div>
-
-              <% if (post.caption) { %>
-                <div class="post-caption">
-                  <span class="caption-username"><%= post.user.name %></span>
-                  <%= post.caption %>
-                </div>
-              <% } %>
-
-              <!-- Comments section (initially hidden) -->
-              <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
-                <div class="comment-input-container">
-                  <img src="<%= user.avatar %>" alt="Your avatar" class="comment-avatar">
-                  <input type="text" class="comment-input-field" placeholder="Add a comment..." 
-                      onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
-                  <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
-                </div>
-                <div class="comments-list" id="comments-list-<%= post._id %>">
-                  <!-- Comments will be loaded here -->
-                </div>
-              </div>
-            </article>
-          <% }) %>
-          
-          <!-- Caught up message -->
-          <div class="caught-up">
-            <div class="caught-up-icon">✨</div>
-            <h3>You're all caught up!</h3>
-            <p>You've seen all the recent posts from people you follow.</p>
-          </div>
-        <% } %>
+  
+  <!-- <CHANGE> Added welcome banner section matching screenshot -->
+  <div class="welcome-banner">
+    <div class="welcome-container">
+      <div class="welcome-content">
+        <h1 class="welcome-title">Posts for you</h1>
+        <p class="welcome-subtitle">Discover amazing content from creators you love</p>
       </div>
-    </section>
+      <div class="welcome-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
 
+  <main>
+    <!-- <CHANGE> Updated main layout structure to match screenshot -->
     <div class="main-layout">
       <section aria-label="Feed" class="main-feed">
-        <div id="feed" class="feed" aria-live="polite"></div>
-      </section>
-
-      <aside class="sidebar-container" aria-label="Suggested for you">
-        <section class="suggestions">
-          <div class="suggestions-header">
-            <h3 class="suggestions-title">Suggested for you</h3>
-          </div>
-          <div id="suggestionsList" class="suggestions-list"></div>
-        </section>
-      </aside>
-    </div>
-</main>
-
-  <script>
-    // App State
-    const state = {
-      currentUser: {
-        id: 'current_user',
-        username: 'you',
-        avatar: 'https://picsum.photos/seed/you/64/64',
-      },
-      posts: [
-        {
-          id: 'p1',
-          user: {
-            id: 'u1',
-            username: 'aria',
-            avatar: 'https://picsum.photos/seed/aria/64/64',
-          },
-          image: 'https://picsum.photos/seed/citylights/800/800',
-          caption:
-            "City lights at midnight ✨ There's something magical about the urban glow when the world sleeps.",
-          likes: 1247,
-          liked: false,
-          comments: [
-            { id: 'c1', username: 'mike', text: 'Incredible shot! 🔥' },
-            { id: 'c2', username: 'sarah', text: 'The composition is perfect' },
-          ],
-          timestamp: '2 hours ago',
-        },
-        {
-          id: 'p2',
-          user: {
-            id: 'u2',
-            username: 'noah',
-            avatar: 'https://picsum.photos/seed/noah/64/64',
-          },
-          image: 'https://picsum.photos/seed/workspace/800/800',
-          caption: 'Minimalist workspace setup. Clean desk, clear mind 🧠',
-          likes: 856,
-          liked: true,
-          comments: [{ id: 'c3', username: 'alex', text: 'Goals! Where did you get that desk?' }],
-          timestamp: '5 hours ago',
-        },
-        {
-          id: 'p3',
-          user: {
-            id: 'u3',
-            username: 'luna',
-            avatar: 'https://picsum.photos/seed/luna/64/64',
-          },
-          image: 'https://picsum.photos/seed/mountain/800/800',
-          caption: 'Golden hour at the mountain peak 🏔️ Worth every step of the hike!',
-          likes: 2103,
-          liked: false,
-          comments: [
-            { id: 'c4', username: 'emma', text: 'Breathtaking view! 😍' },
-            { id: 'c5', username: 'james', text: 'Which mountain is this?' },
-            { id: 'c6', username: 'luna', text: '@james Mount Rainier! Highly recommend' },
-          ],
-          timestamp: '1 day ago',
-        },
-        {
-          id: 'p4',
-          user: {
-            id: 'u4',
-            username: 'zoe',
-            avatar: 'https://picsum.photos/seed/zoe/64/64',
-          },
-          image: 'https://picsum.photos/seed/coffee/800/800',
-          caption: 'Perfect morning brew ☕ Starting the day right with some specialty coffee',
-          likes: 432,
-          liked: false,
-          comments: [
-            { id: 'c7', username: 'ryan', text: 'What blend is this?' },
-          ],
-          timestamp: '3 hours ago',
-        },
-        {
-          id: 'p5',
-          user: {
-            id: 'u5',
-            username: 'kai',
-            avatar: 'https://picsum.photos/seed/kai/64/64',
-          },
-          image: 'https://picsum.photos/seed/art/800/800',
-          caption: 'Latest digital artwork 🎨 Experimenting with new color palettes',
-          likes: 789,
-          liked: true,
-          comments: [
-            { id: 'c8', username: 'maya', text: 'This is stunning!' },
-            { id: 'c9', username: 'alex', text: 'Love the color harmony' },
-          ],
-          timestamp: '6 hours ago',
-        },
-        {
-          id: 'p6',
-          user: {
-            id: 'u6',
-            username: 'sage',
-            avatar: 'https://picsum.photos/seed/sage/64/64',
-          },
-          image: 'https://picsum.photos/seed/nature/800/800',
-          caption: 'Peaceful forest walk 🌲 Nature therapy is the best therapy',
-          likes: 1564,
-          liked: false,
-          comments: [
-            { id: 'c10', username: 'nina', text: 'So serene 🍃' },
-            { id: 'c11', username: 'tom', text: 'Where is this trail?' },
-            { id: 'c12', username: 'sage', text: '@tom Pacific Northwest, near Portland' },
-          ],
-          timestamp: '8 hours ago',
-        },
-      ],
-      suggestions: [
-        { id: 's1', username: 'avril', note: 'Popular • Photography', following: false, avatar: 'https://picsum.photos/seed/avril/64/64' },
-        { id: 's2', username: 'bruno', note: 'New to Linksy', following: false, avatar: 'https://picsum.photos/seed/bruno/64/64' },
-        { id: 's3', username: 'cora', note: 'Follows you', following: false, avatar: 'https://picsum.photos/seed/cora/64/64' },
-        { id: 's4', username: 'dylan', note: 'Trending now', following: false, avatar: 'https://picsum.photos/seed/dylan/64/64' },
-        { id: 's5', username: 'elsa', note: 'Suggested', following: false, avatar: 'https://picsum.photos/seed/elsa/64/64' },
-        { id: 's6', username: 'flora', note: 'For you', following: false, avatar: 'https://picsum.photos/seed/flora/64/64' },
-        { id: 's7', username: 'glenn', note: 'Popular • Travel', following: false, avatar: 'https://picsum.photos/seed/glenn/64/64' },
-        { id: 's8', username: 'hana', note: 'Mutual friends', following: false, avatar: 'https://picsum.photos/seed/hana/64/64' },
-      ],
-    };
-
-    // DOM
-    const feedContainer = document.getElementById('feed');
-    const suggestionsList = document.getElementById('suggestionsList');
-    const createPostModal = document.getElementById('createPostModal'); // This is not in the HTML, but keeping for JS logic
-    const createPostForm = document.getElementById('createPostForm'); // This is not in the HTML
-
-    // Render Posts
-    function renderPosts(list = state.posts) {
-      const postsHtml = list
-        .map(
-          (post) => `
-        <article class="post-card" data-post-id="${post.id}">
-          <div class="post-header">
-            <div class="post-user">
-              <img src="${post.user.avatar}" alt="${post.user.username}" class="post-avatar" />
-              <div class="post-user-info">
-                <span class="post-username">${post.user.username}</span>
-                <span class="post-time">${post.timestamp}</span>
-              </div>
+        <div id="feed" class="feed" aria-live="polite">
+          <% if (!isFollowingAny) { %>
+            <div class="empty-feed">
+              <h3>Welcome to Linksy!</h3>
+              <p>Start following people to see their posts in your feed.</p>
+              <p>Check out the suggested users on the right to get started.</p>
             </div>
-            <button class="post-menu" aria-label="Post menu">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                <circle cx="12" cy="12" r="1"></circle>
-                <circle cx="19" cy="12" r="1"></circle>
-                <circle cx="5" cy="12" r="1"></circle>
+          <% } else if (posts.length === 0) { %>
+            <div class="empty-feed">
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3a9 9 0 100 18 9 9 0 000-18zm1 13h-2v-2h2v2zm0-4h-2V7h2v5z"/>
               </svg>
-            </button>
-          </div>
-
-          <img src="${post.image}" alt="Post image from ${post.user.username}" class="post-image" data-post-id="${post.id}" />
-
-          <div class="post-actions">
-            <div class="post-actions-left">
-              <button class="action-btn like-btn ${post.liked ? 'liked' : ''}" data-post-id="${post.id}" aria-label="Like">
-                <svg class="action-icon like-icon" viewBox="0 0 24 24" fill="${post.liked ? 'var(--heart)' : 'none'}" stroke="${post.liked ? 'var(--heart)' : 'currentColor'}">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-              </button>
-              <button class="action-btn comment-btn" data-post-id="${post.id}" aria-label="Comment">
-                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-              </button>
+              <h2>No Recent Posts</h2>
+              <p>The people you follow haven’t posted anything yet.  
+                Check back later for newer content!</p>
             </div>
-          </div>
+          <% } else { %>
+            <% posts.forEach(post => { %>
+              <article class="post-card" data-post-id="<%= post._id %>">
+                <div class="post-header">
+                  <div class="post-user">
+                    <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar" />
+                    <div class="post-user-info">
+                      <span class="post-username"><%= post.user.name %></span>
+                      <span class="post-time"><%= post.timestamp %></span>
+                    </div>
+                  </div>
+                  <button class="post-menu" aria-label="Post menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                      <circle cx="12" cy="12" r="1"></circle>
+                      <circle cx="19" cy="12" r="1"></circle>
+                      <circle cx="5" cy="12" r="1"></circle>
+                    </svg>
+                  </button>
+                </div>
 
-          <div class="post-likes">${post.likes.toLocaleString()} likes</div>
+                <% if (post.image) { %>
+                  <img src="<%= post.image %>" alt="Post image from <%= post.user.username %>" class="post-image" data-post-id="<%= post._id %>" />
+                <% } %>
+                  <div class="post-actions">
+                    <div class="post-action like-action">
+                      <svg class="like-icon <%= post.liked ? 'liked' : '' %>"
+                        viewBox="0 0 24 24" onclick="toggleLike('<%= post._id %>', event)">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                      </svg>
+                      <span class="like-count" onclick="showLikesModal('<%= post._id %>')"><%= post.likes ? post.likes.length : 0 %></span>
+                    </div>
+                    
+                    <div class="post-action comment-action" onclick="toggleComments('<%= post._id %>')">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h11c.55 0 1-.45 1-1z"/>
+                      </svg>
+                      <span class="comment-count"><%= post.comments ? post.comments.length : 0 %></span>
+                    </div>
+                  </div>
 
-          <div class="post-caption">
-            <span class="caption-username">${post.user.username}</span>
-            ${post.caption}
-          </div>
-
-          <div class="post-comments">
-            ${
-              post.comments.length > 2
-                ? `
-              <button class="view-comments" data-post-id="${post.id}">
-                View all ${post.comments.length} comments
-              </button>
-            `
-                : ''
-            }
-            ${post.comments
-              .slice(-2)
-              .map(
-                (comment) => `
-              <div class="comment">
-                <span class="comment-username">${comment.username}</span>
-                ${comment.text}
-              </div>
-            `
-              )
-              .join('')}
-          </div>
-
-          <div class="add-comment">
-            <input type="text" class="comment-input" placeholder="Add a comment..." data-post-id="${post.id}" />
-            <button class="post-comment-btn" data-post-id="${post.id}" disabled>Post</button>
-          </div>
-        </article>
-      `
-        )
-        .join('');
-
-      feedContainer.innerHTML = postsHtml;
-    }
-
-    // Render Suggestions
-    function renderSuggestions() {
-      suggestionsList.innerHTML = state.suggestions
-        .map(
-          (s) => `
-        <div class="suggestion-item" data-sug-id="${s.id}">
-          <div class="sug-user">
-            <img class="sug-avatar" src="${s.avatar}" alt="${s.username}" />
-            <div class="sug-meta">
-              <span class="sug-name">${s.username}</span>
-              <span class="sug-note">${s.note}</span>
+                  <!-- Enhanced comments section with replies support -->
+                  <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
+                    <div class="comment-input-container">
+                      <img src="<%= user.avatar %>" alt="Your avatar" class="comment-avatar">
+                      <input type="text" class="comment-input" placeholder="Add a comment..." 
+                            onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
+                      <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
+                    </div>
+                    <div class="comments-list" id="comments-list-<%= post._id %>">
+                      <!-- Comments will be loaded here -->
+                    </div>
+                  </div>
+              </article>
+            <% }) %>
+            
+            <div class="caught-up">
+              <div class="caught-up-icon">✨</div>
+              <h3>You're all caught up!</h3>
+              <p>You've seen all the recent posts from people you follow.</p>
             </div>
-          </div>
-          <button class="follow-btn ${s.following ? 'following' : ''}" aria-pressed="${s.following}" data-sug-id="${s.id}">
-            ${s.following ? 'Following' : 'Follow'}
-          </button>
+          <% } %>
         </div>
-      `
-        )
-        .join('');
-    }
-    
-  // Like
-    async function handleLike(postId) {
-      try {
-        const response = await fetch(`/posts/${postId}/like`, { method: 'POST' });
-        if (!response.ok) throw new Error('Failed to like post.');
-        const data = await response.json();
-        const post = state.posts.find((p) => p.id === postId);
-        if (!post) return;
-        post.liked = data.liked;
-        post.likes = data.likes;
-        renderPosts(); // Re-render to show updated state
-      } catch (error) {
-        console.error('Like error:', error);
-      }
-    }
-
-    // Double tap like
-    async function handleDoubleTapLike(postId, event) {
-      const post = state.posts.find((p) => p.id === postId);
-      if (!post || post.liked) return;
-      // If not liked, call the handleLike function
-      await handleLike(postId);
-      // Floating heart animation remains the same
-      const heart = document.createElement('div');
-      heart.innerHTML = '❤️';
-      heart.className = 'floating-heart';
-      heart.style.left = event.clientX + 'px';
-      heart.style.top = event.clientY + 'px';
-      document.body.appendChild(heart);
-      setTimeout(() => heart.remove(), 1200);
-    }
-
-    // Comment input
-    function handleCommentInput(postId, input) {
-      const postBtn = document.querySelector(`[data-post-id="${postId}"].post-comment-btn`);
-      const hasText = input.value.trim().length > 0;
-      if (!postBtn) return;
-      postBtn.disabled = !hasText;
-      postBtn.classList.toggle('active', hasText);
-    }
-
-    // Add comment
-    async function addComment(postId, text) {
-      if (!text) return;
-      try {
-        const response = await fetch(`/posts/${postId}/comment`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text }),
-        });
-        if (!response.ok) throw new Error('Failed to post comment.');
-        const post = state.posts.find((p) => p.id === postId);
-        post.comments.push({ username: state.currentUser.username, text });
-        renderPosts();
-      } catch (error) {
-        console.error('Comment error:', error);
-      }
-}
-
-    // Render single post
-    function renderSinglePost(post) {
-      return `
-        <article class="post-card" data-post-id="${post.id}">
-          <div class="post-header">
-            <div class="post-user">
-              <img src="${post.user.avatar}" alt="${post.user.username}" class="post-avatar" />
-              <div class="post-user-info">
-                <span class="post-username">${post.user.username}</span>
-                <span class="post-time">${post.timestamp}</span>
-              </div>
-            </div>
-            <button class="post-menu" aria-label="Post menu">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                <circle cx="12" cy="12" r="1"></circle>
-                <circle cx="19" cy="12" r="1"></circle>
-                <circle cx="5" cy="12" r="1"></circle>
-              </svg>
-            </button>
-          </div>
-
-          <img src="${post.image}" alt="Post image from ${post.user.username}" class="post-image" data-post-id="${post.id}" />
-
-          <div class="post-actions">
-            <div class="post-actions-left">
-              <button class="action-btn like-btn ${post.liked ? 'liked' : ''}" data-post-id="${post.id}" aria-label="Like">
-                <svg class="action-icon like-icon" viewBox="0 0 24 24" fill="${post.liked ? 'var(--heart)' : 'none'}" stroke="${post.liked ? 'var(--heart)' : 'currentColor'}">
-                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                </svg>
-              </button>
-              <button class="action-btn comment-btn" data-post-id="${post.id}" aria-label="Comment">
-                <svg class="action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-              </button>
-            </div>
-          </div>
-
-          <div class="post-likes">${post.likes.toLocaleString()} likes</div>
-
-          <div class="post-caption">
-            <span class="caption-username">${post.user.username}</span>
-            ${post.caption}
-          </div>
-
-          <div class="post-comments">
-            ${
-              post.comments.length > 2
-                ? `
-              <button class="view-comments" data-post-id="${post.id}">
-                View all ${post.comments.length} comments
-              </button>
-            `
-                : ''
-            }
-            ${post.comments
-              .slice(-2)
-              .map(
-                (comment) => `
-              <div class="comment">
-                <span class="comment-username">${comment.username}</span>
-                ${comment.text}
-              </div>
-            `
-              )
-              .join('')}
-          </div>
-
-          <div class="add-comment">
-            <input type="text" class="comment-input" placeholder="Add a comment..." data-post-id="${post.id}" />
-            <button class="post-comment-btn" data-post-id="${post.id}" disabled>Post</button>
-          </div>
-        </article>
-      `;
-    }
-
-    // Create New Post
-    function createPost(imageUrl, caption) {
-      const newPost = {
-        id: `p${Date.now()}`,
-        user: { id: state.currentUser.id, username: state.currentUser.username, avatar: state.currentUser.avatar },
-        image:
-          imageUrl ||
-          'data:image/svg+xml,%3Csvg width="600" height="600" viewBox="0 0 600 600" fill="none" xmlns="http://www.w3.org/2000/svg"%3E%3Crect width="600" height="600" fill="%23262626"/%3E%3Ctext x="300" y="300" text-anchor="middle" fill="%23737373" font-size="20"%3ENo image provided%3C/text%3E%3C/svg%3E',
-        caption: caption || 'Shared a moment ✨',
-        likes: 0,
-        liked: false,
-        comments: [],
-        timestamp: 'now',
-      };
-
-      state.posts.unshift(newPost);
-      renderPosts();
-      
-      // Smooth scroll to top of feed
-      const feedContainer = document.querySelector('.feed-container');
-      if (feedContainer) {
-        feedContainer.scrollTo({ top: 0, behavior: 'smooth' });
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    }
-
-    // Suggestions: follow toggle
-    async function toggleFollow(id) {
-      try {
-        const response = await fetch(`/users/${id}/follow`, { method: 'POST' });
-        if (!response.ok) throw new Error('Failed to toggle follow status.');
-        const data = await response.json();
-        const suggestion = state.suggestions.find((s) => s.id === id);
-        if (!suggestion) return;
-        suggestion.following = data.following;
-        renderSuggestions();
-      } catch (error) {
-        console.error('Follow error:', error);
-      }
-    }
-
-    // Events
-    document.addEventListener('DOMContentLoaded', () => {
-      renderPosts();
-      renderSuggestions();
-    });
-
-    // Modal controls
-    document.getElementById('createPostBtn').addEventListener('click', () => {
-      createPostModal.classList.add('active');
-      createPostModal.setAttribute('aria-hidden', 'false');
-      document.body.style.overflow = 'hidden'; // Prevent background scroll
-    });
-
-    const closeModalFunction = () => {
-      createPostModal.classList.remove('active');
-      createPostForm.reset();
-      createPostModal.setAttribute('aria-hidden', 'true');
-      document.body.style.overflow = 'auto'; // Restore scroll
-    };
-
-    document.getElementById('closeModal').addEventListener('click', closeModalFunction);
-    document.getElementById('cancelPost').addEventListener('click', closeModalFunction);
-    
-    createPostModal.addEventListener('click', (e) => {
-      if (e.target === createPostModal) {
-        closeModalFunction();
-      }
-    });
-
-    // Form submission
-    createPostForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      const imageUrl = document.getElementById('imageUrl').value.trim();
-      const caption = document.getElementById('caption').value.trim();
-      createPost(imageUrl, caption);
-      closeModalFunction();
-    });
-
-    // Feed interactions
-    document.addEventListener('click', (e) => {
-      // Like
-      if (e.target.closest('.like-btn')) {
-        const postId = e.target.closest('.like-btn').getAttribute('data-post-id');
-        handleLike(postId);
-      }
-      // Comment focus
-      if (e.target.closest('.comment-btn')) {
-        const postId = e.target.closest('.comment-btn').getAttribute('data-post-id');
-        const input = document.querySelector(`[data-post-id="${postId}"].comment-input`);
-        input?.focus();
-      }
-      // Post comment
-      if (e.target.closest('.post-comment-btn')) {
-        const postId = e.target.closest('.post-comment-btn').getAttribute('data-post-id');
-        const input = document.querySelector(`[data-post-id="${postId}"].comment-input`);
-        const text = input?.value.trim();
-        if (text) {
-          addComment(postId, text);
-          input.value = '';
-          input.dispatchEvent(new Event('input'));
-        }
-      }
-      // View all comments
-      if (e.target.closest('.view-comments')) {
-        const postId = e.target.closest('.view-comments').getAttribute('data-post-id');
-        const post = state.posts.find((p) => p.id === postId);
-        const commentsContainer = e.target.closest('.post-comments');
-        if (post && commentsContainer) {
-          commentsContainer.innerHTML = post.comments
-            .map(
-              (comment) => `
-              <div class="comment">
-                <span class="comment-username">${comment.username}</span>
-                ${comment.text}
-              </div>
-            `
-            )
-            .join('');
-        }
-      }
-      // Suggestions follow
-      if (e.target.closest('.follow-btn')) {
-        const id = e.target.closest('.follow-btn').getAttribute('data-sug-id');
-        toggleFollow(id);
-      }
-    });
-
-    // Double tap like on image (click double within 300ms)
-    let tapTimeout;
-    document.addEventListener('click', (e) => {
-      if (e.target.classList.contains('post-image')) {
-        if (tapTimeout) {
-          clearTimeout(tapTimeout);
-          tapTimeout = null;
-          const postId = e.target.getAttribute('data-post-id');
-          handleDoubleTapLike(postId, e);
-        } else {
-          tapTimeout = setTimeout(() => {
-            tapTimeout = null;
-          }, 300);
-        }
-      }
-    });
-
-    // Comment input handling
-    document.addEventListener('input', (e) => {
-      if (e.target.classList.contains('comment-input')) {
-        const postId = e.target.getAttribute('data-post-id');
-        handleCommentInput(postId, e.target);
-      }
-    });
-
-    // Enter to post comment
-    document.addEventListener('keypress', (e) => {
-      if (e.target.classList.contains('comment-input') && e.key === 'Enter') {
-        e.preventDefault();
-        const postId = e.target.getAttribute('data-post-id');
-        const text = e.target.value.trim();
-        if (text) {
-          addComment(postId, text);
-          e.target.value = '';
-          e.target.dispatchEvent(new Event('input'));
-        }
-      }
-    });
-
-    // Escape key to close modal
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && createPostModal.classList.contains('active')) {
-        closeModalFunction();
-      }
-    });
-    async function toggleLike(postId, event) {
-      if (event) {
-        event.stopPropagation();
-      }
-      
-      try {
-        const response = await fetch(`/posts/${postId}/like`, {
-          method: 'POST'
-        });
-        const data = await response.json();
-        
-        if (data.success) {
-          const likeIcon = document.querySelector(`[data-post-id="${postId}"] .like-icon`);
-          const likeCount = document.querySelector(`[data-post-id="${postId}"] .like-count`);
-          
-          if (data.liked) {
-            likeIcon.classList.add('liked');
-          } else {
-            likeIcon.classList.remove('liked');
-          }
-          
-          likeCount.textContent = data.likes;
-        }
-      } catch (error) {
-        console.error('Error toggling like:', error);
-      }
-    }
-
-    // Show likes modal
-    async function showLikesModal(postId) {
-      if (event) {
-        event.stopPropagation();
-      }
-      
-      // Create modal if it doesn't exist
-      let modal = document.getElementById('likesModal');
-      if (!modal) {
-        const modalHTML = `
-          <div id="likesModal" class="modal" style="display: none;">
+        <div id="likesModal" class="modal" style="display: none;">
             <div class="modal-content">
               <div class="modal-header">
                 <h3 id="likesModalTitle">Likes</h3>
@@ -1470,113 +1074,144 @@
               </div>
             </div>
           </div>
-        `;
-        document.body.insertAdjacentHTML('beforeend', modalHTML);
-        modal = document.getElementById('likesModal');
+      </section>
+      <!-- <CHANGE> Added sidebar with suggested users matching screenshot -->
+      <aside class="sidebar-container" aria-label="Suggested for you">
+        <section class="suggestions">
+          <div class="suggestions-header">
+            <h3 class="suggestions-title">Suggested for you</h3>
+          </div>
+          <div class="suggestions-list">
+            <!-- Sample suggested users matching screenshot design -->
+            <div class="suggestion-item">
+              <div class="sug-user">
+                <img src="/placeholder.svg?height=40&width=40" alt="avril" class="sug-avatar" />
+                <div class="sug-meta">
+                  <span class="sug-name">avril</span>
+                  <span class="sug-note">Popular • Photography</span>
+                </div>
+              </div>
+              <button class="follow-btn" onclick="toggleFollow('avril')">Follow</button>
+            </div>
+            
+            <div class="suggestion-item">
+              <div class="sug-user">
+                <img src="/placeholder.svg?height=40&width=40" alt="bruno" class="sug-avatar" />
+                <div class="sug-meta">
+                  <span class="sug-name">bruno</span>
+                  <span class="sug-note">New to Linksy</span>
+                </div>
+              </div>
+              <button class="follow-btn" onclick="toggleFollow('bruno')">Follow</button>
+            </div>
+            
+            <div class="suggestion-item">
+              <div class="sug-user">
+                <img src="/placeholder.svg?height=40&width=40" alt="cora" class="sug-avatar" />
+                <div class="sug-meta">
+                  <span class="sug-name">cora</span>
+                  <span class="sug-note">Follows you</span>
+                </div>
+              </div>
+              <button class="follow-btn" onclick="toggleFollow('cora')">Follow</button>
+            </div>
+            
+            <div class="suggestion-item">
+              <div class="sug-user">
+                <img src="/placeholder.svg?height=40&width=40" alt="dylan" class="sug-avatar" />
+                <div class="sug-meta">
+                  <span class="sug-name">dylan</span>
+                  <span class="sug-note">Trending now</span>
+                </div>
+              </div>
+              <button class="follow-btn" onclick="toggleFollow('dylan')">Follow</button>
+            </div>
+            
+            <div class="suggestion-item">
+              <div class="sug-user">
+                <img src="/placeholder.svg?height=40&width=40" alt="elsa" class="sug-avatar" />
+                <div class="sug-meta">
+                  <span class="sug-name">elsa</span>
+                  <span class="sug-note">Suggested</span>
+                </div>
+              </div>
+              <button class="follow-btn" onclick="toggleFollow('elsa')">Follow</button>
+            </div>
+            
+            <div class="suggestion-item">
+              <div class="sug-user">
+                <img src="/placeholder.svg?height=40&width=40" alt="flora" class="sug-avatar" />
+                <div class="sug-meta">
+                  <span class="sug-name">flora</span>
+                  <span class="sug-note">For you</span>
+                </div>
+              </div>
+              <button class="follow-btn" onclick="toggleFollow('flora')">Follow</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+
+  <script>
+    // <CHANGE> Added toggle follow function for sidebar
+    async function toggleFollow(username) {
+      try {
+        const response = await fetch(`/users/${username}/follow`, {
+          method: 'POST'
+        });
         
-        // Add modal styles if not already present
-        if (!document.getElementById('modal-styles')) {
-          const modalStyles = `
-            <style id="modal-styles">
-              .modal {
-                position: fixed;
-                z-index: 1000;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0, 0, 0, 0.8);
-                display: flex;
-                align-items: center;
-                justify-content: center;
-              }
-              .modal-content {
-                background: var(--surface);
-                border: 1px solid var(--border);
-                border-radius: 16px;
-                width: 90%;
-                max-width: 400px;
-                max-height: 600px;
-                overflow: hidden;
-              }
-              .modal-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 20px;
-                border-bottom: 1px solid var(--border);
-              }
-              .modal-header h3 {
-                margin: 0;
-                font-size: 20px;
-                font-weight: 700;
-                color: var(--text);
-              }
-              .close-modal {
-                font-size: 28px;
-                font-weight: bold;
-                cursor: pointer;
-                color: var(--text-muted);
-                transition: color 0.2s;
-              }
-              .close-modal:hover {
-                color: var(--text);
-              }
-              .modal-body {
-                padding: 0;
-                max-height: 500px;
-                overflow-y: auto;
-              }
-              .user-item {
-                display: flex;
-                align-items: center;
-                padding: 16px 20px;
-                border-bottom: 1px solid var(--border);
-                transition: background-color 0.2s;
-                cursor: pointer;
-              }
-              .user-item:hover {
-                background-color: var(--surface-hover);
-              }
-              .user-item:last-child {
-                border-bottom: none;
-              }
-              .user-item-avatar {
-                width: 40px;
-                height: 40px;
-                border-radius: 50%;
-                object-fit: cover;
-                margin-right: 12px;
-              }
-              .user-item-info {
-                flex: 1;
-              }
-              .user-item-name {
-                font-weight: 700;
-                font-size: 15px;
-                margin-bottom: 2px;
-                color: var(--text);
-              }
-              .user-item-username {
-                color: var(--text-muted);
-                font-size: 14px;
-              }
-              .modal-loading {
-                text-align: center;
-                padding: 40px;
-                color: var(--text-muted);
-              }
-              .modal-empty {
-                text-align: center;
-                padding: 40px;
-                color: var(--text-muted);
-              }
-            </style>
-          `;
-          document.head.insertAdjacentHTML('beforeend', modalStyles);
+        if (!response.ok) throw new Error('Failed to toggle follow status.');
+        
+        const data = await response.json();
+        
+        // Update button state
+        const followBtn = event.target;
+        if (data.following) {
+          followBtn.textContent = 'Following';
+          followBtn.classList.add('following');
+        } else {
+          followBtn.textContent = 'Follow';
+          followBtn.classList.remove('following');
         }
+      } catch (error) {
+        console.error('Follow error:', error);
+      }
+    }
+    async function toggleLike(postId, event) {
+      if (event) {
+          event.stopPropagation();
       }
       
+      try {
+          const response = await fetch(`/posts/${postId}/like`, {
+              method: 'POST'
+          });
+          const data = await response.json();
+          
+          if (data.success) {
+              const likeIcon = document.querySelector(`[data-post-id="${postId}"] .like-icon`);
+              const likeCount = document.querySelector(`[data-post-id="${postId}"] .like-count`);
+              
+              if (data.liked) {
+                  likeIcon.classList.add('liked');
+              } else {
+                  likeIcon.classList.remove('liked');
+              }
+              
+              likeCount.textContent = data.likes;
+          }
+      } catch (error) {
+          console.error('Error toggling like:', error);
+      }
+  }
+    // Show likes modal
+    async function showLikesModal(postId) {
+      if (event) {
+        event.stopPropagation();
+      }
+      const modal = document.getElementById('likesModal');
       const modalTitle = document.getElementById('likesModalTitle');
       const modalBody = document.getElementById('likesModalBody');
       
@@ -1593,7 +1228,7 @@
             modalBody.innerHTML = '<div class="modal-empty">No likes yet</div>';
           } else {
             modalBody.innerHTML = data.users.map(user => `
-              <div class="user-item" onclick="window.location.href='/user/${user.username}'">
+              <div class="user-item" onclick="window.location.href='/users/${user.username}'">
                 <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
                     alt="${user.name}" class="user-item-avatar">
                 <div class="user-item-info">
@@ -1613,13 +1248,10 @@
     }
 
     function closeLikesModal() {
-      const modal = document.getElementById('likesModal');
-      if (modal) {
-        modal.style.display = 'none';
-      }
+      document.getElementById('likesModal').style.display = 'none';
     }
 
-    // Toggle comments visibility
+    // Enhanced comment functionality with replies
     async function toggleComments(postId) {
       const commentsSection = document.getElementById(`comments-${postId}`);
       const commentsList = document.getElementById(`comments-list-${postId}`);
@@ -1632,10 +1264,9 @@
       }
     }
 
-    // Load comments for a post
     async function loadComments(postId) {
       const commentsList = document.getElementById(`comments-list-${postId}`);
-      commentsList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">Loading comments...</div>';
+      commentsList.innerHTML = '<div style="text-align: center; color: #666666; padding: 20px;">Loading comments...</div>';
       
       try {
         const response = await fetch(`/posts/${postId}/comments`);
@@ -1643,7 +1274,7 @@
         
         if (data.success) {
           if (data.comments.length === 0) {
-            commentsList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">No comments yet</div>';
+            commentsList.innerHTML = '<div style="text-align: center; color: #666666; padding: 20px;">No comments yet</div>';
           } else {
             commentsList.innerHTML = data.comments.map(comment => `
               <div class="comment-item" data-comment-id="${comment._id}">
@@ -1655,20 +1286,46 @@
                     <span class="comment-item-time">${formatTime(comment.createdAt)}</span>
                   </div>
                   <div class="comment-item-text">${comment.text}</div>
+                  <div class="comment-item-actions">
+                    <button class="reply-btn" onclick="showReplyInput('${postId}', '${comment._id}')">Reply</button>
+                    ${comment.replies && comment.replies.length > 0 ? `<button class="show-replies-btn" onclick="toggleReplies('${comment._id}')">${comment.replies.length} replies</button>` : ''}
+                  </div>
                 </div>
+              </div>
+              
+              <div class="reply-input-container" id="reply-input-${comment._id}">
+                <img src="${getCurrentUserAvatar()}" alt="Your avatar" class="reply-input-avatar">
+                <input type="text" class="reply-input" placeholder="Write a reply..." 
+                    onkeypress="handleReplyKeypress(event, '${postId}', '${comment._id}')">
+                <button class="reply-submit" onclick="addReply('${postId}', '${comment._id}')">Reply</button>
+              </div>
+              
+              <div class="replies-container" id="replies-${comment._id}" style="display: none;">
+                ${comment.replies ? comment.replies.map(reply => `
+                  <div class="reply-item">
+                    <img src="${reply.user.avatar || 'https://picsum.photos/seed/' + reply.user.username + '/200/200'}" 
+                        alt="${reply.user.name}" class="reply-item-avatar">
+                    <div class="reply-item-content">
+                      <div class="reply-item-header">
+                        <span class="reply-item-name">${reply.user.name}</span>
+                        <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
+                      </div>
+                      <div class="reply-item-text">${reply.text}</div>
+                    </div>
+                  </div>
+                `).join('') : ''}
               </div>
             `).join('');
           }
         }
       } catch (error) {
         console.error('Error loading comments:', error);
-        commentsList.innerHTML = '<div style="text-align: center; color: var(--text-muted); padding: 20px;">Failed to load comments</div>';
+        commentsList.innerHTML = '<div style="text-align: center; color: #666666; padding: 20px;">Failed to load comments</div>';
       }
     }
 
-    // Add comment
     async function addComment(postId) {
-      const input = document.querySelector(`#comments-${postId} .comment-input-field`);
+      const input = document.querySelector(`#comments-${postId} .comment-input`);
       const submitBtn = document.querySelector(`#comments-${postId} .comment-submit`);
       const text = input.value.trim();
       
@@ -1694,7 +1351,7 @@
           
           // Update comment count
           const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-count`);
-          commentCount.textContent = data.totalComments;
+          commentCount.textContent = data.totalComments || (parseInt(commentCount.textContent) + 1);
         } else {
           alert(data.error || 'Failed to add comment');
         }
@@ -1707,7 +1364,6 @@
       }
     }
 
-    // Handle comment keypress
     function handleCommentKeypress(event, postId) {
       if (event.key === 'Enter') {
         event.preventDefault();
@@ -1715,7 +1371,107 @@
       }
     }
 
-    // Format time helper function
+    // Reply functionality
+    function showReplyInput(postId, commentId) {
+      document.querySelectorAll('.reply-input-container').forEach(container => {
+        container.classList.remove('show');
+      });
+      
+      const replyInput = document.getElementById(`reply-input-${commentId}`);
+      replyInput.classList.add('show');
+      replyInput.querySelector('.reply-input').focus();
+    }
+
+    function toggleReplies(commentId) {
+      const repliesContainer = document.getElementById(`replies-${commentId}`);
+      const toggleBtn = event.target;
+      
+      if (repliesContainer.style.display === 'none') {
+        repliesContainer.style.display = 'block';
+        toggleBtn.textContent = 'Hide replies';
+      } else {
+        repliesContainer.style.display = 'none';
+        const repliesCount = repliesContainer.querySelectorAll('.reply-item').length;
+        toggleBtn.textContent = `${repliesCount} replies`;
+      }
+    }
+
+    async function addReply(postId, commentId) {
+      const input = document.querySelector(`#reply-input-${commentId} .reply-input`);
+      const submitBtn = document.querySelector(`#reply-input-${commentId} .reply-submit`);
+      const text = input.value.trim();
+      
+      if (!text) return;
+      
+      try {
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Replying...';
+        
+        const response = await fetch(`/posts/${postId}/comments/${commentId}/reply`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ text })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          input.value = '';
+          document.getElementById(`reply-input-${commentId}`).classList.remove('show');
+          
+          const repliesContainer = document.getElementById(`replies-${commentId}`);
+          const newReplyHTML = `
+            <div class="reply-item">
+              <img src="${data.reply.user.avatar || 'https://picsum.photos/seed/' + data.reply.user.username + '/200/200'}" 
+                  alt="${data.reply.user.name}" class="reply-item-avatar">
+              <div class="reply-item-content">
+                <div class="reply-item-header">
+                  <span class="reply-item-name">${data.reply.user.name}</span>
+                  <span class="reply-item-time">${formatTime(data.reply.createdAt)}</span>
+                </div>
+                <div class="reply-item-text">${data.reply.text}</div>
+              </div>
+            </div>
+          `;
+          
+          repliesContainer.innerHTML += newReplyHTML;
+          repliesContainer.style.display = 'block';
+          
+          const showRepliesBtn = document.querySelector(`[data-comment-id="${commentId}"] .show-replies-btn`);
+          if (showRepliesBtn) {
+            showRepliesBtn.textContent = 'Hide replies';
+          } else {
+            const actionsDiv = document.querySelector(`[data-comment-id="${commentId}"] .comment-item-actions`);
+            actionsDiv.innerHTML += `<button class="show-replies-btn" onclick="toggleReplies('${commentId}')">Hide replies</button>`;
+          }
+        } else {
+          alert(data.error || 'Failed to add reply');
+        }
+      } catch (error) {
+        console.error('Error adding reply:', error);
+        alert('Failed to add reply');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Reply';
+      }
+    }
+
+    function handleReplyKeypress(event, postId, commentId) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        addReply(postId, commentId);
+      }
+      if (event.key === 'Escape') {
+        document.getElementById(`reply-input-${commentId}`).classList.remove('show');
+      }
+    }
+
+    function getCurrentUserAvatar() {
+      return document.querySelector('.comment-avatar')?.src || 'https://picsum.photos/seed/default/200/200';
+    }
+
     function formatTime(dateString) {
       const date = new Date(dateString);
       const now = new Date();
@@ -1731,7 +1487,7 @@
       return `${days}d`;
     }
 
-    // Close modal when clicking outside
+    // Modal event listeners
     window.addEventListener('click', function(event) {
       const likesModal = document.getElementById('likesModal');
       if (event.target === likesModal) {
@@ -1739,7 +1495,6 @@
       }
     });
 
-    // Close modal with Escape key
     document.addEventListener('keydown', function(event) {
       if (event.key === 'Escape') {
         closeLikesModal();

@@ -12,12 +12,14 @@ router.get('/profile', requireAuth, async (req, res) => {
     const user = await User.findById(req.session.userId).select('-password');
     const posts = await Post.find({ user: req.session.userId })
       .populate('user', 'name username avatar')
+      .populate('likes', '_id') // Add this line
       .sort({ createdAt: -1 });
    
     res.render('profile', {
       user,
       posts: posts.map(post => ({
         ...post.toObject(),
+        liked: post.likes.some(like => like._id.toString() === req.session.userId.toString()),
         timestamp: formatTimestamp(post.createdAt)
       }))
     });

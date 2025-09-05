@@ -59,15 +59,25 @@ router.post('/posts/:id/like', requireAuth, async (req, res) => {
   try {
     const post = await Post.findById(req.params.id);
     const userId = req.session.userId;
-   
+    
+    let isLiked;
+    
     if (post.likes.includes(userId)) {
       post.likes = post.likes.filter(id => !id.equals(userId));
+      isLiked = false;
     } else {
       post.likes.push(userId);
+      isLiked = true;
     }
    
     await post.save();
-    res.json({ success: true, likes: post.likes.length, liked: post.likes.includes(userId) });
+    
+    // Use the isLiked variable instead of checking again
+    res.json({ 
+      success: true, 
+      likes: post.likes.length, 
+      liked: isLiked 
+    });
   } catch (error) {
     console.error('Error liking post:', error);
     res.status(500).json({ error: 'Server error' });

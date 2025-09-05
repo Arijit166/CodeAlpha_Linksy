@@ -45,6 +45,7 @@ router.get('/user/:username', requireAuth, async (req, res) => {
    
     const posts = await Post.find({ user: user._id })
       .populate('user', 'name username avatar')
+      .populate('likes', '_id') // Add this line
       .sort({ createdAt: -1 });
    
     const currentUser = await User.findById(req.session.userId).select('-password');
@@ -56,6 +57,7 @@ router.get('/user/:username', requireAuth, async (req, res) => {
       isFollowing,
       posts: posts.map(post => ({
         ...post.toObject(),
+        liked: post.likes.some(like => like._id.toString() === req.session.userId.toString()),
         timestamp: formatTimestamp(post.createdAt)
       }))
     });
