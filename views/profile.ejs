@@ -1141,8 +1141,15 @@
                     } else {
                         modalBody.innerHTML = data.users.map(user => `
                             <div class="user-item" onclick="window.location.href='/user/${user.username}'">
-                                <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
-                                    alt="${user.name}" class="user-item-avatar">
+                                <div style="position: relative; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; color: #8a8a8a; display: ${user.avatar ? 'none' : 'block'};">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                    <img src="${user.avatar || ''}" 
+                                        alt="${user.name}" 
+                                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${user.avatar ? 'block' : 'none'};"
+                                        onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                </div>
                                 <div class="user-item-info">
                                     <div class="user-item-name">${user.name}</div>
                                     <div class="user-item-username">@${user.username}</div>
@@ -1162,42 +1169,50 @@
         function closeLikesModal() {
             document.getElementById('likesModal').style.display = 'none';
         }
+        
         async function showFollowModal(type, userId) {
-        const modal = document.getElementById('followModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalBody = document.getElementById('modalBody');
-        
-        modalTitle.textContent = type === 'followers' ? 'Followers' : 'Following';
-        modalBody.innerHTML = '<div class="modal-loading">Loading...</div>';
-        modal.style.display = 'flex';
-        
-        try {
-            const response = await fetch(`/users/${userId}/${type}`);
-            const data = await response.json();
+            const modal = document.getElementById('followModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
             
-            if (data.success) {
-                if (data.users.length === 0) {
-                    modalBody.innerHTML = `<div class="modal-empty">No ${type} yet</div>`;
-                } else {
-                    modalBody.innerHTML = data.users.map(user => `
-                        <div class="user-item" onclick="window.location.href='/user/${user.username}'">
-                            <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
-                                alt="${user.name}" class="user-item-avatar">
-                            <div class="user-item-info">
-                                <div class="user-item-name">${user.name}</div>
-                                <div class="user-item-username">@${user.username}</div>
+            modalTitle.textContent = type === 'followers' ? 'Followers' : 'Following';
+            modalBody.innerHTML = '<div class="modal-loading">Loading...</div>';
+            modal.style.display = 'flex';
+            
+            try {
+                const response = await fetch(`/users/${userId}/${type}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.users.length === 0) {
+                        modalBody.innerHTML = `<div class="modal-empty">No ${type} yet</div>`;
+                    } else {
+                        modalBody.innerHTML = data.users.map(user => `
+                            <div class="user-item" onclick="window.location.href='/user/${user.username}'">
+                                <div style="position: relative; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; color: #8a8a8a; display: ${user.avatar ? 'none' : 'block'};">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                    <img src="${user.avatar || ''}" 
+                                        alt="${user.name}" 
+                                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${user.avatar ? 'block' : 'none'};"
+                                        onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                </div>
+                                <div class="user-item-info">
+                                    <div class="user-item-name">${user.name}</div>
+                                    <div class="user-item-username">@${user.username}</div>
+                                </div>
                             </div>
-                        </div>
-                    `).join('');
+                        `).join('');
+                    }
+                } else {
+                    modalBody.innerHTML = '<div class="modal-empty">Failed to load users</div>';
                 }
-            } else {
-                modalBody.innerHTML = '<div class="modal-empty">Failed to load users</div>';
+            } catch (error) {
+                console.error('Error loading users:', error);
+                modalBody.innerHTML = '<div class="modal-empty">Error loading users</div>';
             }
-        } catch (error) {
-            console.error('Error loading users:', error);
-            modalBody.innerHTML = '<div class="modal-empty">Error loading users</div>';
         }
-    }
 
     function closeModal() {
         document.getElementById('followModal').style.display = 'none';

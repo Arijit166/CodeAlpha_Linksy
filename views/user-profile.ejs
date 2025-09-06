@@ -72,20 +72,20 @@
             overflow: hidden;
         }
 
+        .default-avatar-icon {
+            width: 40px;
+            height: 40px;
+            color: #8a8a8a;
+            display: block;
+        }
+
         .profile-avatar-img {
             width: 100%;
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
+            display: none;
         }
-
-        .default-avatar-icon {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-
         .profile-info {
             margin-bottom: 20px;
         }
@@ -457,11 +457,33 @@
             border-radius: 12px;
         }
 
-        .comment-avatar {
+        .comment-avatar-container {
+            position: relative;
             width: 32px;
             height: 32px;
             border-radius: 50%;
+            border: 2px solid #3a3a3a;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .comment-default-icon {
+            width: 16px;
+            height: 16px;
+            color: #8a8a8a;
+            display: block;
+        }
+
+        .comment-avatar {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
             object-fit: cover;
+            display: none;
         }
 
         .comment-input {
@@ -590,7 +612,6 @@
             align-items: center;
             gap: 12px;
             margin-top: 8px;
-            justify-content: flex-start; /* This ensures buttons start from the left */
         }
 
         .reply-btn {
@@ -601,20 +622,36 @@
             font-weight: 600;
             cursor: pointer;
             transition: color 0.2s;
-            margin-left: auto; /* This pushes the reply button to the right, but not extreme right */
-            margin-right: 8px; /* Small margin from the edge */
+        }
+
+        .show-replies-btn {
+            background: none;
+            border: none;
+            color: #8a8a8a;
+            font-size: 12px;
+            cursor: pointer;
+            transition: color 0.2s;
         }
 
         .reply-btn:hover {
             color: #1da1f2;
 }
 
-        .replies-container {
-            margin-top: 12px;
-            margin-left: 44px; /* Indent replies */
-            border-left: 2px solid #2a2a2a;
-            padding-left: 12px;
-        }
+ .replies-container {
+        margin-top: 12px;
+        margin-left: 0; /* Remove excessive margin */
+        padding-left: 16px; /* Add padding instead */
+        border-left: 2px solid #2a2a2a;
+    }
+
+    .reply-input-container {
+        display: none;
+        margin-top: 8px;
+        margin-left: 0; /* Remove excessive margin */
+        padding: 8px;
+        background: #1a1a1a;
+        border-radius: 8px;
+    }
 
         .reply-item {
             display: flex;
@@ -660,15 +697,6 @@
         .reply-item-text {
             font-size: 13px;
             line-height: 1.4;
-        }
-
-        .reply-input-container {
-            display: none;
-            margin-top: 8px;
-            margin-left: 44px;
-            padding: 8px;
-            background: #1a1a1a;
-            border-radius: 8px;
         }
 
         .reply-input-container.show {
@@ -718,16 +746,6 @@
             cursor: not-allowed;
         }
 
-        .show-replies-btn {
-            background: none;
-            border: none;
-            color: #8a8a8a;
-            font-size: 12px;
-            cursor: pointer;
-            margin-top: 4px;
-            transition: color 0.2s;
-            /* Remove any margin-left: auto if it exists */
-        }
 
         .show-replies-btn:hover {
             color: #ffffff;
@@ -755,18 +773,13 @@
     <div class="profile-layout">      
         <div class="profile-sidebar">
              <div class="profile-header">
+                <!-- Replace profile avatar section with: -->
                 <div class="profile-avatar-container" id="avatarContainer">
                     <div class="profile-avatar" id="profileAvatarContainer">
-                        <!-- Default person icon (hidden when avatar exists) -->
-                        <svg class="default-avatar-icon" id="defaultAvatarIcon" viewBox="0 0 24 24" fill="currentColor" style="width: 40px; height: 40px; color: #8a8a8a;">
+                        <svg class="default-avatar-icon" id="defaultAvatarIcon" viewBox="0 0 24 24" fill="currentColor">
                             <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                         </svg>
-                        <!-- Actual avatar image -->
-                        <img src="<%= profileUser._id.toString() === currentUser._id.toString() ? (currentUser.avatar ? currentUser.avatar : '') : (profileUser.avatar ? profileUser.avatar : '') %>" 
-                            alt="Profile" 
-                            class="profile-avatar-img" 
-                            id="profileAvatar" 
-                            onerror="showDefaultAvatar()">
+                        <img src="" alt="Profile" class="profile-avatar-img" id="profileAvatar" onerror="showDefaultAvatar()">
                     </div>
                 </div>
             </div>
@@ -866,10 +879,14 @@
                             <!-- Comments section (initially hidden) -->
                             <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
                                 <div class="comment-input-container">
-                                    <img src="<%= currentUser.avatar %>" alt="Your avatar" class="comment-avatar">
-                                    <input type="text" class="comment-input" placeholder="Add a comment..." 
-                                        onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
-                                    <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
+                                    <div class="comment-avatar-container">
+                                        <svg class="comment-default-icon" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                        </svg>
+                                        <img class="comment-avatar" alt="Your avatar" onerror="this.style.display='none'; this.parentNode.querySelector('.comment-default-icon').style.display='block';">
+                                    </div>
+                                    <input type="text" class="comment-input" placeholder="Add a comment...">
+                                    <button class="comment-submit">Post</button>
                                 </div>
                                 <div class="comments-list" id="comments-list-<%= post._id %>">
                                     <!-- Comments will be loaded here -->
@@ -918,19 +935,29 @@
             });
         }
         document.addEventListener('DOMContentLoaded', function() {
-            const userHasAvatar = '<%= currentUser && currentUser.avatar ? "true" : "false" %>';
-            const avatar = document.getElementById('profileAvatar');
-            const defaultIcon = document.getElementById('defaultAvatarIcon');
+            const avatars = document.querySelectorAll('.comment-avatar');
+            const userAvatar = '<%= currentUser && currentUser.avatar ? currentUser.avatar : "" %>';
             
-            if (userHasAvatar === 'false' || !avatar.src || avatar.src.trim() === '') {
-                avatar.style.display = 'none';
-                defaultIcon.style.display = 'block';
-            } else {
+            avatars.forEach(img => {
+                if (userAvatar) {
+                    img.src = userAvatar;
+                    img.style.display = 'block';
+                    img.parentNode.querySelector('.comment-default-icon').style.display = 'none';
+                }
+            });
+        });
+        document.addEventListener('DOMContentLoaded', function() {
+            const profileAvatar = document.getElementById('profileAvatar');
+            const defaultIcon = document.getElementById('defaultAvatarIcon');
+            const avatarUrl = '<%= profileUser.avatar || "" %>';
+            
+            if (avatarUrl) {
+                profileAvatar.src = avatarUrl;
+                profileAvatar.style.display = 'block';
                 defaultIcon.style.display = 'none';
             }
         });
         
-
         // Update the existing avatar change handler to hide/show the default icon
         document.getElementById('avatarInput').addEventListener('change', async (e) => {
             const file = e.target.files[0];
@@ -1022,70 +1049,37 @@
                 }
             });
         }
-        async function showLikesModal(postId) {
-            if (event) {
-                event.stopPropagation();
-            }
-            const modal = document.getElementById('likesModal');
-            const modalTitle = document.getElementById('likesModalTitle');
-            const modalBody = document.getElementById('likesModalBody');
-            
-            modalTitle.textContent = 'Likes';
-            modalBody.innerHTML = '<div class="modal-loading">Loading...</div>';
-            modal.style.display = 'flex';
-            
-            try {
-                const response = await fetch(`/posts/${postId}/likes`);
-                const data = await response.json();
-                
-                if (data.success) {
-                    if (data.users.length === 0) {
-                        modalBody.innerHTML = '<div class="modal-empty">No likes yet</div>';
-                    } else {
-                        modalBody.innerHTML = data.users.map(user => `
-                            <div class="user-item" onclick="window.location.href='/user/${user.username}'">
-                                <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
-                                    alt="${user.name}" class="user-item-avatar">
-                                <div class="user-item-info">
-                                    <div class="user-item-name">${user.name}</div>
-                                    <div class="user-item-username">@${user.username}</div>
-                                </div>
-                            </div>
-                        `).join('');
-                    }
-                } else {
-                    modalBody.innerHTML = '<div class="modal-empty">Failed to load likes</div>';
-                }
-            } catch (error) {
-                console.error('Error loading likes:', error);
-                modalBody.innerHTML = '<div class="modal-empty">Error loading likes</div>';
-            }
+       async function showLikesModal(postId) {
+        if (event) {
+            event.stopPropagation();
         }
-
-        function closeLikesModal() {
-            document.getElementById('likesModal').style.display = 'none';
-        }
-        async function showFollowModal(type, userId) {
-        const modal = document.getElementById('followModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalBody = document.getElementById('modalBody');
+        const modal = document.getElementById('likesModal');
+        const modalTitle = document.getElementById('likesModalTitle');
+        const modalBody = document.getElementById('likesModalBody');
         
-        modalTitle.textContent = type === 'followers' ? 'Followers' : 'Following';
+        modalTitle.textContent = 'Likes';
         modalBody.innerHTML = '<div class="modal-loading">Loading...</div>';
         modal.style.display = 'flex';
         
         try {
-            const response = await fetch(`/users/${userId}/${type}`);
+            const response = await fetch(`/posts/${postId}/likes`);
             const data = await response.json();
             
             if (data.success) {
                 if (data.users.length === 0) {
-                    modalBody.innerHTML = `<div class="modal-empty">No ${type} yet</div>`;
+                    modalBody.innerHTML = '<div class="modal-empty">No likes yet</div>';
                 } else {
                     modalBody.innerHTML = data.users.map(user => `
                         <div class="user-item" onclick="window.location.href='/user/${user.username}'">
-                            <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
-                                alt="${user.name}" class="user-item-avatar">
+                            <div style="position: relative; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; color: #8a8a8a; display: ${user.avatar ? 'none' : 'block'};">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                                <img src="${user.avatar || ''}" 
+                                    alt="${user.name}" 
+                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${user.avatar ? 'block' : 'none'};"
+                                    onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                            </div>
                             <div class="user-item-info">
                                 <div class="user-item-name">${user.name}</div>
                                 <div class="user-item-username">@${user.username}</div>
@@ -1094,13 +1088,60 @@
                     `).join('');
                 }
             } else {
-                modalBody.innerHTML = '<div class="modal-empty">Failed to load users</div>';
+                modalBody.innerHTML = '<div class="modal-empty">Failed to load likes</div>';
             }
         } catch (error) {
-            console.error('Error loading users:', error);
-            modalBody.innerHTML = '<div class="modal-empty">Error loading users</div>';
+            console.error('Error loading likes:', error);
+            modalBody.innerHTML = '<div class="modal-empty">Error loading likes</div>';
         }
     }
+
+        function closeLikesModal() {
+            document.getElementById('likesModal').style.display = 'none';
+        }
+        async function showFollowModal(type, userId) {
+            const modal = document.getElementById('followModal');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+            
+            modalTitle.textContent = type === 'followers' ? 'Followers' : 'Following';
+            modalBody.innerHTML = '<div class="modal-loading">Loading...</div>';
+            modal.style.display = 'flex';
+            
+            try {
+                const response = await fetch(`/users/${userId}/${type}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    if (data.users.length === 0) {
+                        modalBody.innerHTML = `<div class="modal-empty">No ${type} yet</div>`;
+                    } else {
+                        modalBody.innerHTML = data.users.map(user => `
+                            <div class="user-item" onclick="window.location.href='/user/${user.username}'">
+                                <div style="position: relative; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; color: #8a8a8a; display: ${user.avatar ? 'none' : 'block'};">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                    <img src="${user.avatar || ''}" 
+                                        alt="${user.name}" 
+                                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${user.avatar ? 'block' : 'none'};"
+                                        onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                </div>
+                                <div class="user-item-info">
+                                    <div class="user-item-name">${user.name}</div>
+                                    <div class="user-item-username">@${user.username}</div>
+                                </div>
+                            </div>
+                        `).join('');
+                    }
+                } else {
+                    modalBody.innerHTML = '<div class="modal-empty">Failed to load users</div>';
+                }
+            } catch (error) {
+                console.error('Error loading users:', error);
+                modalBody.innerHTML = '<div class="modal-empty">Error loading users</div>';
+            }
+}
 
     function closeModal() {
         document.getElementById('followModal').style.display = 'none';
@@ -1203,29 +1244,44 @@
                                         : ''
                                     }
                                 </div>
-                            </div>
-                            
-                            <div class="reply-input-container" id="reply-input-${comment._id}">
-                                <img src="${getCurrentUserAvatar()}" alt="Your avatar" class="reply-input-avatar">
-                                <input type="text" class="reply-input" placeholder="Write a reply..." 
-                                    onkeypress="handleReplyKeypress(event, '${postId}', '${comment._id}')">
-                                <button class="reply-submit" onclick="addReply('${postId}', '${comment._id}')">Reply</button>
-                            </div>
-                            
-                            <div class="replies-container" id="replies-${comment._id}" style="display: none;">
-                                ${comment.replies && comment.replies.length > 0 ? comment.replies.map(reply => `
-                                    <div class="reply-item">
-                                        <img src="${reply.user.avatar || 'https://picsum.photos/seed/' + reply.user.username + '/200/200'}" 
-                                            alt="${reply.user.name}" class="reply-item-avatar">
-                                        <div class="reply-item-content">
-                                            <div class="reply-item-header">
-                                                <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
-                                                <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
-                                            </div>
-                                            <div class="reply-item-text">${reply.text}</div>
-                                        </div>
+                                
+                                <div class="reply-input-container" id="reply-input-${comment._id}">
+                                    <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${getCurrentUserAvatar() ? 'none' : 'block'};">
+                                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                        </svg>
+                                        <img src="${getCurrentUserAvatar()}" 
+                                            alt="Your avatar" 
+                                            style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${getCurrentUserAvatar() ? 'block' : 'none'};" 
+                                            onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
                                     </div>
-                                `).join('') : ''}
+                                    <input type="text" class="reply-input" placeholder="Write a reply..." 
+                                        onkeypress="handleReplyKeypress(event, '${postId}', '${comment._id}')">
+                                    <button class="reply-submit" onclick="addReply('${postId}', '${comment._id}')">Reply</button>
+                                </div>
+                                
+                                <div class="replies-container" id="replies-${comment._id}" style="display: none;">
+                                    ${comment.replies && comment.replies.length > 0 ? comment.replies.map(reply => `
+                                        <div class="reply-item">
+                                            <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${reply.user.avatar ? 'none' : 'block'};">
+                                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                                </svg>
+                                                <img src="${reply.user.avatar || ''}" 
+                                                    alt="${reply.user.name}" 
+                                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${reply.user.avatar ? 'block' : 'none'};"
+                                                    onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                            </div>
+                                            <div class="reply-item-content">
+                                                <div class="reply-item-header">
+                                                    <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
+                                                    <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
+                                                </div>
+                                                <div class="reply-item-text">${reply.text}</div>
+                                            </div>
+                                        </div>
+                                    `).join('') : ''}
+                                </div>
                             </div>
                         </div>
                     `).join('');
@@ -1347,7 +1403,11 @@
 
     // Helper function to get current user avatar (you'll need to make this available)
     function getCurrentUserAvatar() {
-        return document.querySelector('.comment-avatar')?.src || 'https://picsum.photos/seed/default/200/200';
+        const currentUserHasAvatar = '<%= currentUser && currentUser.avatar ? "true" : "false" %>';
+        if (currentUserHasAvatar === 'true') {
+            return '<%= currentUser.avatar || "" %>';
+        }
+        return '';
     }
     async function addComment(postId) {
         const input = document.querySelector(`#comments-${postId} .comment-input`);
