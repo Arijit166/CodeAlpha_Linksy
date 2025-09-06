@@ -31,7 +31,21 @@ router.get('/', requireAuth, async (req, res) => {
         .limit(20);
     }
 
-    // Smart suggestions: Only show followers and mutual connections
+    // Get suggested posts from users not being followed
+    let suggestedPosts = [];
+    const excludeUserIds = [...followingIds, user._id]; // Exclude followed users and current user
+    
+    suggestedPosts = await Post.find({ 
+      user: { $nin: excludeUserIds } 
+    })
+    .populate('user', 'name username avatar')
+    .populate('comments.user', 'username name avatar')
+    .populate('comments.replies.user', 'username name avatar')
+    .populate('likes', 'username name avatar')
+    .sort({ createdAt: -1 })
+    .limit(10); // Limit suggested posts
+
+    // Smart suggestions for sidebar: Only show followers and mutual connections
     let suggestions = [];
 
     // 1. Get users who follow the current user
@@ -52,19 +66,19 @@ router.get('/', requireAuth, async (req, res) => {
           $ne: req.session.userId, 
           $nin: [...followingIds, ...followers.map(f => f._id)] 
         },
-        following: { $ne: req.session.userId } // Exclude users who already follow current user
+        following: { $ne: req.session.userId }
       })
       .select('username name avatar followers following')
       .limit(10);
 
       // Pattern 2: A follows B, C also follows B, suggest C to A and A to C
       const pattern2 = await User.find({
-        following: { $in: followingIds }, // Users who follow the same people as current user
+        following: { $in: followingIds },
         _id: { 
           $ne: req.session.userId, 
           $nin: [...followingIds, ...followers.map(f => f._id)] 
         },
-        followers: { $ne: req.session.userId } // Exclude users who already follow current user
+        followers: { $ne: req.session.userId }
       })
       .select('username name avatar followers following')
       .limit(10);
@@ -79,6 +93,7 @@ router.get('/', requireAuth, async (req, res) => {
     // Combine suggestions
     suggestions = [...followers, ...mutualConnections].slice(0, 8);
 
+    // In your res.render call, add this line:
     res.render('index', {
       user,
       posts: posts.map(post => ({
@@ -86,13 +101,24 @@ router.get('/', requireAuth, async (req, res) => {
         likesCount: post.likes.length,
         liked: post.likes.some(like => like._id.toString() === req.session.userId.toString()),
         commentsCount: post.comments.length,
-        timestamp: formatTimestamp(post.createdAt)
+        timestamp: formatTimestamp(post.createdAt),
+        isFollowing: true
+      })),
+      suggestedPosts: suggestedPosts.map(post => ({
+        ...post.toObject(),
+        likesCount: post.likes.length,
+        liked: post.likes.some(like => like._id.toString() === req.session.userId.toString()),
+        commentsCount: post.comments.length,
+        timestamp: formatTimestamp(post.createdAt),
+        isFollowing: false
       })),
       suggestions: suggestions.map(suggestion => ({
         ...suggestion.toObject(),
         note: getNote(suggestion, user, followingIds)
       })),
-      isFollowingAny: followingIds.length > 0
+      isFollowingAny: followingIds.length > 0,
+      hasFollowedPosts: posts.length > 0, // Add this line
+      hasSuggestedPosts: suggestedPosts.length > 0 // Add this line
     });
   } catch (error) {
     console.error('Error loading home:', error);
@@ -116,7 +142,8 @@ function getNote(suggestion, currentUser, followingIds) {
     return 'Suggested for you';
   }
   
-  // Fallback (shouldn't reach here with the new logic)
+  // Fallback
   return 'Suggested for you';
 }
+
 module.exports = router;

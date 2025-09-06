@@ -396,6 +396,7 @@
       align-items: center;
       justify-content: space-between;
       padding: 18px 20px;
+      width: 100%;
     }
 
     .post-user { display: flex; align-items: center; gap: 14px; }
@@ -990,6 +991,57 @@
     color: var(--text-secondary); /* subtle secondary text */
     margin: 2px 0;
   }
+  .post-follow-btn {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: var(--primary);
+    color: #fff;
+    transition: all .3s ease;
+    margin-left: auto; /* This pushes it to the right */
+    flex-shrink: 0; /* Prevents shrinking */
+  }
+
+  .post-follow-btn:hover {
+    background: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px var(--primary-glow);
+  }
+
+  .post-follow-btn.following {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .post-follow-btn.following:hover {
+    background: var(--surface-hover);
+  }
+
+  .suggested-section-header {
+    text-align: center;
+    padding: 32px 0 20px;
+    margin: 20px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  .suggested-section-title {
+    font-size: 20px;
+    font-weight: 800;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+
+  .suggested-section-subtitle {
+    color: var(--text-secondary);
+    font-size: 14px;
+  }
   </style>
 </head>
 <body>
@@ -1014,50 +1066,53 @@
     <!-- <CHANGE> Updated main layout structure to match screenshot -->
     <div class="main-layout">
       <section aria-label="Feed" class="main-feed">
-        <div id="feed" class="feed" aria-live="polite">
-          <% if (!isFollowingAny) { %>
-           <div class="empty-feed">
-              <div class="empty-logo" style="width: 80px; height: 80px; background: var(--accent-gradient); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 48px; box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4); margin-bottom: 16px; opacity: 0.8;">
-                L
-              </div>
-              <div class="welcome-text">
-                <h3>Welcome to Linksy!</h3>
-                <p>Start following people to see their posts in your feed.</p>
-                <p>Check out the suggested users on the right to get started.</p>
-              </div>
-            </div>
-          <% } else if (posts.length === 0) { %>
-            <div class="empty-feed">
-              <svg viewBox="0 0 24 24">
-                <path d="M12 3a9 9 0 100 18 9 9 0 000-18zm1 13h-2v-2h2v2zm0-4h-2V7h2v5z"/>
-              </svg>
-              <h2>No Recent Posts</h2>
-              <p>The people you follow haven’t posted anything yet.  
-                Check back later for newer content!</p>
-            </div>
-          <% } else { %>
-            <% posts.forEach(post => { %>
-              <article class="post-card" data-post-id="<%= post._id %>">
-                <div class="post-header">
-                  <div class="post-user">
-                    <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar" />
-                    <div class="post-user-info">
-                      <span class="post-username"><%= post.user.name %></span>
-                      <span class="post-time"><%= post.timestamp %></span>
-                    </div>
-                  </div>
-                  <button class="post-menu" aria-label="Post menu">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
-                      <circle cx="12" cy="12" r="1"></circle>
-                      <circle cx="19" cy="12" r="1"></circle>
-                      <circle cx="5" cy="12" r="1"></circle>
-                    </svg>
-                  </button>
+          <div id="feed" class="feed" aria-live="polite">
+            <% if (!isFollowingAny) { %>
+              <!-- Welcome message for new users -->
+              <div class="empty-feed">
+                <div class="empty-logo" style="width: 80px; height: 80px; background: var(--accent-gradient); border-radius: 16px; display: flex; align-items: center; justify-content: center; font-weight: 900; color: white; font-size: 48px; box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4); margin-bottom: 16px; opacity: 0.8;">
+                  L
                 </div>
+                <div class="welcome-text">
+                  <h3>Welcome to Linksy!</h3>
+                  <p>Start following people to see their posts in your feed.</p>
+                  <p>Check out the suggested users on the right to get started.</p>
+                </div>
+              </div>
+            <% } else if (!hasFollowedPosts) { %>
+              <!-- No recent posts message -->
+              <div class="empty-feed">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 3a9 9 0 100 18 9 9 0 000-18zm1 13h-2v-2h2v2zm0-4h-2V7h2v5z"/>
+                </svg>
+                <h2>No Recent Posts</h2>
+                <p>The people you follow haven't posted anything yet.</p>
+              </div>
+            <% } else { %>
+              <!-- Regular posts from followed users -->
+              <% posts.forEach(post => { %>
+                <article class="post-card" data-post-id="<%= post._id %>">
+                  <div class="post-header">
+                    <div class="post-user">
+                      <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar" />
+                      <div class="post-user-info">
+                        <span class="post-username"><%= post.user.name %></span>
+                        <span class="post-time"><%= post.timestamp %></span>
+                      </div>
+                    </div>
+                    <button class="post-menu" aria-label="Post menu">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true">
+                        <circle cx="12" cy="12" r="1"></circle>
+                        <circle cx="19" cy="12" r="1"></circle>
+                        <circle cx="5" cy="12" r="1"></circle>
+                      </svg>
+                    </button>
+                  </div>
 
-                <% if (post.image) { %>
-                  <img src="<%= post.image %>" alt="Post image from <%= post.user.username %>" class="post-image" data-post-id="<%= post._id %>" />
-                <% } %>
+                  <% if (post.image) { %>
+                    <img src="<%= post.image %>" alt="Post image from <%= post.user.username %>" class="post-image" data-post-id="<%= post._id %>" />
+                  <% } %>
+                  
                   <div class="post-actions">
                     <div class="post-action like-action">
                       <svg class="like-icon <%= post.liked ? 'liked' : '' %>"
@@ -1075,7 +1130,6 @@
                     </div>
                   </div>
 
-                  <!-- Enhanced comments section with replies support -->
                   <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
                     <div class="comment-input-container">
                       <img src="<%= user.avatar %>" alt="Your avatar" class="comment-avatar">
@@ -1087,28 +1141,74 @@
                       <!-- Comments will be loaded here -->
                     </div>
                   </div>
-              </article>
-            <% }) %>
-            
-            <div class="caught-up">
-              <div class="caught-up-icon">✨</div>
-              <h3>You're all caught up!</h3>
-              <p>You've seen all the recent posts from people you follow.</p>
-            </div>
-          <% } %>
-        </div>
-        <div id="likesModal" class="modal" style="display: none;">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h3 id="likesModalTitle">Likes</h3>
-                <span class="close-modal" onclick="closeLikesModal()">&times;</span>
+                </article>
+              <% }) %>
+              
+              <!-- Show caught up message only when there are posts -->
+              <div class="caught-up">
+                <div class="caught-up-icon">✨</div>
+                <h3>You're all caught up!</h3>
+                <p>You've seen all the recent posts from people you follow.</p>
               </div>
-              <div class="modal-body" id="likesModalBody">
-                <!-- Likes list will be populated here -->
+            <% } %>
+
+            <!-- Suggested posts section - shown in ALL cases -->
+            <% if (hasSuggestedPosts) { %>
+              <div class="suggested-section-header">
+                <h3 class="suggested-section-title">Suggested for you</h3>
+                <p class="suggested-section-subtitle">Posts from people you might like</p>
               </div>
-            </div>
+              
+              <% suggestedPosts.forEach(post => { %>
+                <article class="post-card" data-post-id="<%= post._id %>">
+                  <div class="post-header">
+                      <div class="post-user">
+                        <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar" />
+                        <div class="post-user-info">
+                          <span class="post-username"><%= post.user.name %></span>
+                          <span class="post-time"><%= post.timestamp %></span>
+                        </div>
+                      </div>
+                      <!-- Follow button moved to extreme right -->
+                      <button class="post-follow-btn" onclick="toggleFollowFromPost(event, '<%= post.user._id %>')">Follow</button>
+                    </div>
+                  <% if (post.image) { %>
+                    <img src="<%= post.image %>" alt="Post image from <%= post.user.username %>" class="post-image" data-post-id="<%= post._id %>" />
+                  <% } %>
+                  
+                  <div class="post-actions">
+                    <div class="post-action like-action">
+                      <svg class="like-icon <%= post.liked ? 'liked' : '' %>"
+                        viewBox="0 0 24 24" onclick="toggleLike('<%= post._id %>', event)">
+                        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                      </svg>
+                      <span class="like-count" onclick="showLikesModal('<%= post._id %>')"><%= post.likes ? post.likes.length : 0 %></span>
+                    </div>
+                    
+                    <div class="post-action comment-action" onclick="toggleComments('<%= post._id %>')">
+                      <svg viewBox="0 0 24 24">
+                        <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h11c.55 0 1-.45 1-1z"/>
+                      </svg>
+                      <span class="comment-count"><%= post.comments ? post.comments.length : 0 %></span>
+                    </div>
+                  </div>
+
+                  <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
+                    <div class="comment-input-container">
+                      <img src="<%= user.avatar %>" alt="Your avatar" class="comment-avatar">
+                      <input type="text" class="comment-input" placeholder="Add a comment..." 
+                            onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
+                      <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
+                    </div>
+                    <div class="comments-list" id="comments-list-<%= post._id %>">
+                      <!-- Comments will be loaded here -->
+                    </div>
+                  </div>
+                </article>
+              <% }) %>
+            <% } %>
           </div>
-      </section>
+        </section>
       <!-- <CHANGE> Added sidebar with suggested users matching screenshot -->
       <aside class="sidebar-container" aria-label="Suggested for you">
         <section class="suggestions">
@@ -1140,6 +1240,18 @@
                   </div>
                 <% } %>
               </div>
+              <!-- Add this modal HTML before the closing </body> tag -->
+                <div id="likesModal" class="modal" style="display: none;">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h3 id="likesModalTitle">Likes</h3>
+                      <span class="close-modal" onclick="closeLikesModal()">&times;</span>
+                    </div>
+                    <div class="modal-body" id="likesModalBody">
+                      <!-- Likes list will be populated here -->
+                    </div>
+                  </div>
+                </div>
         </section>
       </aside>
     </div>
@@ -1172,6 +1284,34 @@
         console.error('Follow error:', error);
       }
 }
+    // Add this new function for following from posts
+    async function toggleFollowFromPost(event, userId) {
+      event.stopPropagation();
+      
+      const followBtn = event.target;
+      
+      try {
+        const response = await fetch(`/users/${userId}/follow`, {
+          method: 'POST'
+        });
+        
+        if (!response.ok) throw new Error('Failed to toggle follow status.');
+        
+        const data = await response.json();
+        
+        // Update button state directly
+        if (data.following) {
+          followBtn.textContent = 'Following';
+          followBtn.classList.add('following');
+        } else {
+          followBtn.textContent = 'Follow';
+          followBtn.classList.remove('following');
+        }
+      } catch (error) {
+        console.error('Follow error:', error);
+        // Could add a brief error indication if needed
+      }
+    }
     async function toggleLike(postId, event) {
       if (event) {
           event.stopPropagation();
