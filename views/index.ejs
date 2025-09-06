@@ -241,14 +241,48 @@
       min-width: 0; 
     }
 
-    .sug-avatar { 
-      width: 40px; 
-      height: 40px; 
-      border-radius: 50%; 
-      object-fit: cover; 
-      flex-shrink: 0;
+    .sug-avatar-container {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       border: 2px solid var(--border);
-      transition: all 0.3s ease;
+      background: var(--surface-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .sug-avatar-container .default-avatar-icon {
+      width: 20px;
+      height: 20px;
+      color: #8a8a8a;
+      display: block;
+    }
+
+    .sug-avatar-container .sug-avatar {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
+    .sug-avatar-container .sug-avatar.loaded {
+      display: block;
+    }
+
+    .sug-avatar-container .sug-avatar.loaded + .default-avatar-icon {
+      display: none;
+    }
+
+    .sug-name {
+      cursor: pointer;
+      color: var(--primary) !important;
     }
 
     .suggestion-item:hover .sug-avatar {
@@ -260,16 +294,6 @@
       display: flex; 
       flex-direction: column; 
       min-width: 0; 
-    }
-
-    .sug-name { 
-      font-size: 14px; 
-      font-weight: 700; 
-      color: var(--text); 
-      overflow: hidden; 
-      text-overflow: ellipsis; 
-      white-space: nowrap;
-      letter-spacing: -0.2px;
     }
 
     .sug-note { 
@@ -1104,7 +1128,10 @@
                             onerror="this.style.display='none'; this.parentNode.querySelector('.default-avatar-icon').style.display='block'; this.parentNode.querySelector('.default-avatar-icon').classList.remove('hidden');">
                     </div>
                       <div class="post-user-info">
-                        <span class="post-username"><%= post.user.name %></span>
+                        <span class="post-username" style="cursor: pointer; color: var(--primary);" 
+                              onclick="window.location.href='/user/<%= post.user.username %>'">
+                          <%= post.user.name %>
+                        </span>
                         <span class="post-time"><%= post.timestamp %></span>
                       </div>
                     </div>
@@ -1135,11 +1162,19 @@
 
                   <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
                     <div class="comment-input-container">
-                      <img src="<%= user.avatar %>" alt="Your avatar" class="comment-avatar">
-                      <input type="text" class="comment-input" placeholder="Add a comment..." 
-                            onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
-                      <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
-                    </div>
+                        <div class="comment-avatar-container" style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface-light); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                          <svg class="default-avatar-icon" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a;">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                          </svg>
+                          <img src="<%= user.avatar || '' %>" alt="Your avatar" class="comment-avatar" 
+                              style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: absolute; top: 0; left: 0; display: none;"
+                              onload="this.style.display='block'; this.parentNode.querySelector('.default-avatar-icon').style.display='none';"
+                              onerror="this.style.display='none'; this.parentNode.querySelector('.default-avatar-icon').style.display='block';">
+                        </div>
+                        <input type="text" class="comment-input" placeholder="Add a comment..." 
+                              onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
+                        <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
+                      </div>
                     <div class="comments-list" id="comments-list-<%= post._id %>">
                       <!-- Comments will be loaded here -->
                     </div>
@@ -1168,7 +1203,10 @@
                       <div class="post-user">
                         <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar" />
                         <div class="post-user-info">
-                          <span class="post-username"><%= post.user.name %></span>
+                          <span class="post-username" style="cursor: pointer; color: var(--primary);" 
+                                onclick="window.location.href='/user/<%= post.user.username %>'">
+                            <%= post.user.name %>
+                          </span>
                           <span class="post-time"><%= post.timestamp %></span>
                         </div>
                       </div>
@@ -1197,8 +1235,16 @@
                   </div>
 
                   <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
-                    <div class="comment-input-container">
-                      <img src="<%= user.avatar %>" alt="Your avatar" class="comment-avatar">
+                   <div class="comment-input-container">
+                      <div class="comment-avatar-container" style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border); background: var(--surface-light); display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                        <svg class="default-avatar-icon" viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a;">
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <img src="<%= user.avatar || '' %>" alt="Your avatar" class="comment-avatar" 
+                            style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; position: absolute; top: 0; left: 0; display: none;"
+                            onload="this.style.display='block'; this.parentNode.querySelector('.default-avatar-icon').style.display='none';"
+                            onerror="this.style.display='none'; this.parentNode.querySelector('.default-avatar-icon').style.display='block';">
+                      </div>
                       <input type="text" class="comment-input" placeholder="Add a comment..." 
                             onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
                       <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
@@ -1223,19 +1269,26 @@
                 <% if (suggestions && suggestions.length > 0) { %>
                   <% suggestions.forEach(suggestion => { %>
                     <div class="suggestion-item">
-                      <div class="sug-user">
-                        <img src="<%= suggestion.avatar || 'https://picsum.photos/seed/' + suggestion.username + '/200/200' %>" 
-                            alt="<%= suggestion.username %>" class="sug-avatar" />
-                        <div class="sug-meta">
-                          <span class="sug-name" style="cursor: pointer; color: var(--primary);" 
-                                onclick="window.location.href='/user/<%= suggestion.username %>'">
-                            <%= suggestion.name || suggestion.username %>
-                          </span>
-                          <span class="sug-note"><%= suggestion.note %></span>
+                        <div class="sug-user">
+                          <div class="sug-avatar-container">
+                            <svg class="default-avatar-icon" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            <img src="<%= suggestion.avatar || '' %>" 
+                                alt="<%= suggestion.username %>" 
+                                class="sug-avatar"
+                                onload="this.classList.add('loaded')"
+                                onerror="this.style.display='none';">
+                          </div>
+                          <div class="sug-meta">
+                            <span class="sug-name" onclick="window.location.href='/user/<%= suggestion.username %>'">
+                              <%= suggestion.name || suggestion.username %>
+                            </span>
+                            <span class="sug-note"><%= suggestion.note %></span>
+                          </div>
                         </div>
-                      </div>
-                      <button class="follow-btn" onclick="toggleFollowSuggestion(event, '<%= suggestion._id %>')">Follow</button>
-                    </div>
+                        <button class="follow-btn" onclick="toggleFollowSuggestion(event, '<%= suggestion._id %>')">Follow</button>
+                  </div>
                   <% }) %>
                 <% } else { %>
                   <div style="text-align: center; color: var(--text-muted); padding: 20px;">
@@ -1365,8 +1418,15 @@
           } else {
             modalBody.innerHTML = data.users.map(user => `
               <div class="user-item" onclick="window.location.href='/user/${user.username}'">
-                <img src="${user.avatar || 'https://picsum.photos/seed/' + user.username + '/200/200'}" 
-                    alt="${user.name}" class="user-item-avatar">
+                <div style="position: relative; width: 40px; height: 40px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-right: 12px;">
+                  <svg viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; color: #8a8a8a; display: ${user.avatar ? 'none' : 'block'};">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                  <img src="${user.avatar || ''}" 
+                      alt="${user.name}" 
+                      style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${user.avatar ? 'block' : 'none'};"
+                      onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                </div>
                 <div class="user-item-info">
                   <div class="user-item-name">${user.name}</div>
                   <div class="user-item-username">@${user.username}</div>
@@ -1412,19 +1472,38 @@
           if (data.comments.length === 0) {
             commentsList.innerHTML = '<div style="text-align: center; color: #666666; padding: 20px;">No comments yet</div>';
           } else {
-           commentsList.innerHTML = data.comments.map(comment => `
+            commentsList.innerHTML = data.comments.map(comment => `
               <div class="comment-item" data-comment-id="${comment._id}">
-                  <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
-                      <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a; display: ${comment.user.avatar ? 'none' : 'block'};">
-                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                      </svg>
-                      <img src="${comment.user.avatar || ''}" 
-                          alt="${comment.user.name}" 
-                          style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${comment.user.avatar ? 'block' : 'none'};"
-                          onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                  <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a; display: ${comment.user.avatar ? 'none' : 'block'};">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                  <img src="${comment.user.avatar || ''}" 
+                      alt="${comment.user.name}" 
+                      style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${comment.user.avatar ? 'block' : 'none'};"
+                      onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                </div>
+                <div class="comment-item-content">
+                  <div class="comment-item-header">
+                    <span class="comment-item-name" style="cursor: pointer; color: var(--primary);" onclick="window.location.href='/user/${comment.user.username}'">${comment.user.name}</span>
+                    <span class="comment-item-time">${formatTime(comment.createdAt)}</span>
                   </div>
+                  <div class="comment-item-text">${comment.text}</div>
+                  <div class="comment-item-actions">
+                    <button class="reply-btn" onclick="showReplyInput('${postId}', '${comment._id}')">Reply</button>
+                    ${comment.replies && comment.replies.length > 0 ? `
+                      <button class="show-replies-btn" onclick="toggleReplies('${comment._id}')">${comment.replies.length} replies</button>
+                    ` : ''}
+                  </div>
+                </div>
+              </div>
+              
               <div class="reply-input-container" id="reply-input-${comment._id}">
-                <img src="${getCurrentUserAvatar()}" alt="Your avatar" class="reply-input-avatar">
+                <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                  <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a;">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
                 <input type="text" class="reply-input" placeholder="Write a reply..." 
                     onkeypress="handleReplyKeypress(event, '${postId}', '${comment._id}')">
                 <button class="reply-submit" onclick="addReply('${postId}', '${comment._id}')">Reply</button>
@@ -1433,11 +1512,18 @@
               <div class="replies-container" id="replies-${comment._id}" style="display: none;">
                 ${comment.replies ? comment.replies.map(reply => `
                   <div class="reply-item">
-                    <img src="${reply.user.avatar || 'https://picsum.photos/seed/' + reply.user.username + '/200/200'}" 
-                        alt="${reply.user.name}" class="reply-item-avatar">
+                    <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${reply.user.avatar ? 'none' : 'block'};">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                      </svg>
+                      <img src="${reply.user.avatar || ''}" 
+                          alt="${reply.user.name}" 
+                          style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${reply.user.avatar ? 'block' : 'none'};"
+                          onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                    </div>
                     <div class="reply-item-content">
                       <div class="reply-item-header">
-                        <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
+                        <span class="reply-item-name" style="cursor: pointer; color: var(--primary);" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
                         <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
                       </div>
                       <div class="reply-item-text">${reply.text}</div>
@@ -1554,11 +1640,18 @@
           const repliesContainer = document.getElementById(`replies-${commentId}`);
           const newReplyHTML = `
             <div class="reply-item">
-              <img src="${data.reply.user.avatar || 'https://picsum.photos/seed/' + data.reply.user.username + '/200/200'}" 
-                  alt="${data.reply.user.name}" class="reply-item-avatar">
+              <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${data.reply.user.avatar ? 'none' : 'block'};">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <img src="${data.reply.user.avatar || ''}" 
+                    alt="${data.reply.user.name}" 
+                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${data.reply.user.avatar ? 'block' : 'none'};"
+                    onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+              </div>
               <div class="reply-item-content">
                 <div class="reply-item-header">
-                  <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${data.reply.user.username}'">${data.reply.user.name}</span>
+                  <span class="reply-item-name" style="cursor: pointer; color: var(--primary);" onclick="window.location.href='/user/${data.reply.user.username}'">${data.reply.user.name}</span>
                   <span class="reply-item-time">${formatTime(data.reply.createdAt)}</span>
                 </div>
                 <div class="reply-item-text">${data.reply.text}</div>
@@ -1587,7 +1680,6 @@
         submitBtn.textContent = 'Reply';
       }
     }
-
     function handleReplyKeypress(event, postId, commentId) {
       if (event.key === 'Enter') {
         event.preventDefault();
