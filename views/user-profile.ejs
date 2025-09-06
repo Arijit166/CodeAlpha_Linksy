@@ -972,47 +972,50 @@
         });
         
         // Update the existing avatar change handler to hide/show the default icon
-        document.getElementById('avatarInput').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const newImageUrl = e.target.result;
-                    
-                    try {
-                        const response = await fetch('/profile/avatar', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                avatar: newImageUrl
-                            })
-                        });
+        const avatarInput = document.getElementById('avatarInput');
+        if (avatarInput) {
+            avatarInput.addEventListener('change', async (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        const newImageUrl = e.target.result;
                         
-                        const data = await response.json();
-                        
-                        if (data.success) {
-                            // Hide default icon and show new avatar
-                            document.getElementById('defaultAvatarIcon').style.display = 'none';
-                            document.getElementById('profileAvatar').src = newImageUrl;
-                            document.getElementById('profileAvatar').style.display = 'block';
-                            
-                            // Update all post avatars on the page
-                            document.querySelectorAll('.post-avatar').forEach(el => {
-                                el.src = newImageUrl;
+                        try {
+                            const response = await fetch('/profile/avatar', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    avatar: newImageUrl
+                                })
                             });
-                        } else {
-                            alert('Failed to update avatar');
+                            
+                            const data = await response.json();
+                            
+                            if (data.success) {
+                                // Hide default icon and show new avatar
+                                document.getElementById('defaultAvatarIcon').style.display = 'none';
+                                document.getElementById('profileAvatar').src = newImageUrl;
+                                document.getElementById('profileAvatar').style.display = 'block';
+                                
+                                // Update all post avatars on the page
+                                document.querySelectorAll('.post-avatar').forEach(el => {
+                                    el.src = newImageUrl;
+                                });
+                            } else {
+                                alert('Failed to update avatar');
+                            }
+                        } catch (error) {
+                            console.error('Avatar update error:', error);
+                            alert('An error occurred. Please try again.');
                         }
-                    } catch (error) {
-                        console.error('Avatar update error:', error);
-                        alert('An error occurred. Please try again.');
-                    }
-                };
-                reader.readAsDataURL(file);
-            }
-        });
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
        // Follow/Unfollow functionality
         const followBtn = document.getElementById('followBtn');
         if (followBtn) {
@@ -1233,7 +1236,7 @@
                 if (data.comments.length === 0) {
                     commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">No comments yet</div>';
                 } else {
-                    commentsList.innerHTML = data.comments.map(comment => `
+                    commentsList.innerHTML = data.comments.reverse().map(comment => `
                         <div class="comment-item" data-comment-id="${comment._id}">
                             <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
                                 <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a; display: ${comment.user.avatar ? 'none' : 'block'};">
@@ -1282,8 +1285,8 @@
                                 </div>
                                 
                                 <div class="replies-container" id="replies-${comment._id}" style="display: none;">
-                                    ${comment.replies && comment.replies.length > 0 ? comment.replies.map(reply => `
-                                        <div class="reply-item">
+                                    ${comment.replies && comment.replies.length > 0 ? comment.replies.reverse().map(reply => `
+                                        <div class="reply-item" data-reply-id="${reply._id}">
                                             <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
                                                 <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${reply.user.avatar ? 'none' : 'block'};">
                                                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
@@ -1298,7 +1301,7 @@
                                                     <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
                                                     <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
                                                     ${reply.user._id === '<%= currentUser._id %>' ? 
-                                                        `<button class="comment-delete-btn" onclick="deleteReply('${postId}', '${comment._id}', '${reply._id}')" title="Delete reply" style="margin-left: auto;">
+                                                        `<button class="comment-delete-btn" onclick="deleteReply('${postId}', '${comment._id}', '${reply._id}')" title="Delete reply">
                                                             <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                                                                 <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                             </svg>
@@ -1310,8 +1313,8 @@
                                             </div>
                                         </div>
                                     `).join('') : ''}
-                                </div>
-                            </div>
+                                </div>  
+                            </div>         
                         </div>
                     `).join('');
                 }
@@ -1410,14 +1413,26 @@
                 
                 // Add new reply to the replies container
                 const repliesContainer = document.getElementById(`replies-${commentId}`);
-                const newReplyHTML = `
-                    <div class="reply-item">
-                        <img src="${data.reply.user.avatar || ''}" 
-                            alt="${data.reply.user.name}" class="reply-item-avatar">
+               const newReplyHTML = `
+                    <div class="reply-item" data-reply-id="${data.reply._id}">
+                        <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${data.reply.user.avatar ? 'none' : 'block'};">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            <img src="${data.reply.user.avatar || ''}" 
+                                alt="${data.reply.user.name}" 
+                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${data.reply.user.avatar ? 'block' : 'none'};"
+                                onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                        </div>
                         <div class="reply-item-content">
                             <div class="reply-item-header">
                                 <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${data.reply.user.username}'">${data.reply.user.name}</span>
-                                <span class="reply-item-time">${formatTime(data.reply.createdAt)}</span>
+                               <span class="reply-item-time">${formatTime(data.reply.createdAt)}</span>
+                                <button class="comment-delete-btn" onclick="deleteReply('${postId}', '${commentId}', '${data.reply._id}')" title="Delete reply">
+                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
                             </div>
                             <div class="reply-item-text">${data.reply.text}</div>
                         </div>
@@ -1479,8 +1494,32 @@
             const data = await response.json();
             
             if (data.success) {
-                // Reload comments to reflect changes
-                await loadComments(postId);
+                // Remove the reply from DOM
+                const replyElement = document.querySelector(`[data-reply-id="${replyId}"]`);
+                if (replyElement) {
+                    replyElement.remove();
+                }
+                
+                // Update replies count button
+                const repliesContainer = document.getElementById(`replies-${commentId}`);
+                const remainingReplies = repliesContainer.querySelectorAll('.reply-item').length;
+                const showRepliesBtn = document.querySelector(`[data-comment-id="${commentId}"] .show-replies-btn`);
+                
+                if (remainingReplies === 0) {
+                    if (showRepliesBtn) {
+                        showRepliesBtn.remove();
+                    }
+                    repliesContainer.style.display = 'none';
+                } else if (showRepliesBtn) {
+                    showRepliesBtn.textContent = `${remainingReplies} replies`;
+                }
+                
+                // Update main comment count
+                const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-count`);
+                if (commentCount) {
+                    const currentCount = parseInt(commentCount.textContent);
+                    commentCount.textContent = Math.max(0, currentCount - 1);
+                }
             } else {
                 alert(data.error || 'Failed to delete reply');
             }
@@ -1489,6 +1528,27 @@
             alert('Failed to delete reply');
         }
     }
+
+        document.addEventListener('DOMContentLoaded', function() {
+        // Use event delegation for dynamically added elements
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('comment-submit')) {
+                const commentsSection = e.target.closest('.comments-section');
+                const postId = commentsSection.id.replace('comments-', '');
+                addComment(postId);
+            }
+        });
+        
+        // Add enter key listeners using event delegation
+        document.addEventListener('keypress', function(e) {
+            if (e.target.classList.contains('comment-input') && e.key === 'Enter') {
+                e.preventDefault();
+                const commentsSection = e.target.closest('.comments-section');
+                const postId = commentsSection.id.replace('comments-', '');
+                addComment(postId);
+            }
+        });
+    });
 
     async function addComment(postId) {
         const input = document.querySelector(`#comments-${postId} .comment-input`);
@@ -1513,11 +1573,68 @@
             
             if (data.success) {
                 input.value = '';
-                await loadComments(postId);
                 
                 // Update comment count
                 const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-count`);
                 commentCount.textContent = data.totalComments;
+                
+                // Add new comment directly to the top of the list
+                const commentsList = document.getElementById(`comments-list-${postId}`);
+                const newCommentHTML = `
+                    <div class="comment-item" data-comment-id="${data.comment._id}">
+                        <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a; display: ${getCurrentUserAvatar() ? 'none' : 'block'};">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            <img src="${getCurrentUserAvatar()}" 
+                                alt="${data.comment.user.name}" 
+                                style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${getCurrentUserAvatar() ? 'block' : 'none'};"
+                                onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                        </div>
+                        <div class="comment-item-content">
+                            <div class="comment-item-header">
+                                <span class="comment-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${data.comment.user.username}'">${data.comment.user.name}</span>
+                                <span class="comment-item-time">now</span>
+                            </div>
+                            <div class="comment-item-text">${data.comment.text}</div>
+                            <div class="comment-item-actions">
+                                <button class="reply-btn" onclick="showReplyInput('${postId}', '${data.comment._id}')">Reply</button>
+                                <button class="comment-delete-btn" onclick="deleteComment('${postId}', '${data.comment._id}')" title="Delete comment">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            
+                            <div class="reply-input-container" id="reply-input-${data.comment._id}">
+                                <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${getCurrentUserAvatar() ? 'none' : 'block'};">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                    <img src="${getCurrentUserAvatar()}" 
+                                        alt="Your avatar" 
+                                        style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${getCurrentUserAvatar() ? 'block' : 'none'};" 
+                                        onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                </div>
+                                <input type="text" class="reply-input" placeholder="Write a reply..." 
+                                    onkeypress="handleReplyKeypress(event, '${postId}', '${data.comment._id}')">
+                                <button class="reply-submit" onclick="addReply('${postId}', '${data.comment._id}')">Reply</button>
+                            </div>
+                            
+                            <div class="replies-container" id="replies-${data.comment._id}" style="display: none;">
+                            </div>  
+                        </div>         
+                    </div>
+                `;
+                
+                // Check if there are existing comments
+                if (commentsList.innerHTML.includes('No comments yet')) {
+                    commentsList.innerHTML = newCommentHTML;
+                } else {
+                    // Add to the top of existing comments
+                    commentsList.insertAdjacentHTML('afterbegin', newCommentHTML);
+                }
+                
             } else {
                 alert(data.error || 'Failed to add comment');
             }
