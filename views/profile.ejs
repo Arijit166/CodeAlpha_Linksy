@@ -501,18 +501,6 @@
             margin-bottom: 4px;
         }
 
-        .reply-btn {
-            background: none;
-            border: none;
-            color: #8a8a8a;
-            font-size: 12px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: color 0.2s;
-            align-self: flex-start; /* Prevent individual button stretching */
-            width: auto; /* Ensure button doesn't expand */
-        }
-        
         .replies-container {
             margin-top: 12px;
             margin-left: 0; /* Remove left margin since it's already inside comment-item-content */
@@ -553,7 +541,24 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            margin-top: 4px; /* Reduced from 8px */
+            margin-top: 4px;
+        }
+
+        .reply-btn, .show-replies-btn {
+            background: none;
+            border: none;
+            color: #8a8a8a;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 0;
+            margin: 0;
+            line-height: 1;
+        }
+
+        .reply-btn:hover, .show-replies-btn:hover {
+            color: #1da1f2;
         }
 
         /* Ensure proper comment structure */
@@ -562,10 +567,6 @@
             gap: 12px;
             margin-bottom: 16px; /* Increased spacing between main comments */
             padding: 8px 0;
-        }
-
-        .reply-btn:hover {
-            color: #1da1f2;
         }
 
         .reply-item:hover {
@@ -578,6 +579,7 @@
             align-items: center;
             gap: 6px;
             margin-bottom: 2px;
+            position: relative;
         }
 
         .reply-item-name {
@@ -588,14 +590,29 @@
         .reply-item-time {
             color: #8a8a8a;
             font-size: 11px;
-        }
+}
 
         .reply-item-text {
             font-size: 13px;
             line-height: 1.4;
         }
 
+        .reply-delete-btn {
+            background: none;
+            border: none;
+            color: #8a8a8a;
+            font-size: 12px;
+            cursor: pointer;
+            padding: 2px 4px;
+            transition: color 0.2s;
+            margin-left: 8px;
+            display: inline-flex;
+            align-items: center;
+        }
 
+        .reply-delete-btn:hover {
+            color: #ff4458;
+        }
         .reply-input-container.show {
             display: flex;
             align-items: center;
@@ -643,19 +660,6 @@
             cursor: not-allowed;
         }
 
-        .show-replies-btn {
-            background: none;
-            border: none;
-            color: #8a8a8a;
-            font-size: 12px;
-            cursor: pointer;
-            margin-top: 0; /* Remove the margin-top: 4px */
-            transition: color 0.2s;
-        }
-
-        .show-replies-btn:hover {
-            color: #ffffff;
-        }
         .avatar-options {
             position: absolute;
             top: 90px;
@@ -724,6 +728,19 @@
     .comment-input-container img[src=""]:not([src]) + svg,
     .comment-input-container img:not([src]) + svg {
         display: block;
+    }
+    .comment-delete-btn {
+        background: none;
+        border: none;
+        color: #8a8a8a;
+        font-size: 12px;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.2s;
+    }
+
+    .comment-delete-btn:hover {
+        color: #ff4458;
     }
     </style>
 </head>
@@ -1293,22 +1310,26 @@
                 if (data.comments.length === 0) {
                     commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">No comments yet</div>';
                 } else {
-                    // In the loadComments function, replace the comment HTML generation with this:
                     commentsList.innerHTML = data.comments.map(comment => `
                         <div class="comment-item" data-comment-id="${comment._id}">
                             <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
-                                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a; display: ${comment.user.avatar ? 'none' : 'block'};">
+                                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a; ${comment.user.avatar ? 'display: none;' : ''}">
                                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                 </svg>
-                                <img src="${comment.user.avatar || ''}" 
-                                    alt="${comment.user.name}" 
-                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${comment.user.avatar ? 'block' : 'none'};"
-                                    onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                ${comment.user.avatar ? `<img src="${comment.user.avatar}" alt="${comment.user.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">` : ''}
                             </div>
                             <div class="comment-item-content">
                                 <div class="comment-item-header">
                                     <span class="comment-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${comment.user.username}'">${comment.user.name}</span>
                                     <span class="comment-item-time">${formatTime(comment.createdAt)}</span>
+                                    ${comment.user._id === '<%= user._id %>' ? 
+                                        `<button class="comment-delete-btn" onclick="deleteComment('${postId}', '${comment._id}')" title="Delete comment">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>` 
+                                        : ''
+                                    }
                                 </div>
                                 <div class="comment-item-text">${comment.text}</div>
                                 <div class="comment-item-actions">
@@ -1321,10 +1342,10 @@
                                 
                                 <div class="reply-input-container" id="reply-input-${comment._id}">
                                     <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
-                                        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${getCurrentUserAvatar() ? 'none' : 'block'};">
+                                        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; ${getCurrentUserAvatar() ? 'display: none;' : ''}">
                                             <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                         </svg>
-                                        <img src="${getCurrentUserAvatar()}" alt="Your avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${getCurrentUserAvatar() ? 'block' : 'none'};" onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                        ${getCurrentUserAvatar() ? `<img src="${getCurrentUserAvatar()}" alt="Your avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">` : ''}
                                     </div>
                                     <input type="text" class="reply-input" placeholder="Write a reply..." 
                                         onkeypress="handleReplyKeypress(event, '${postId}', '${comment._id}')">
@@ -1335,22 +1356,28 @@
                                     ${comment.replies && comment.replies.length > 0 ? comment.replies.map(reply => `
                                         <div class="reply-item">
                                             <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
-                                                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${reply.user.avatar ? 'none' : 'block'};">
+                                                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; ${reply.user.avatar ? 'display: none;' : ''}">
                                                     <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
                                                 </svg>
-                                                <img src="${reply.user.avatar || ''}" alt="${reply.user.name}" 
-                                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${reply.user.avatar ? 'block' : 'none'};"
-                                                    onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                                ${reply.user.avatar ? `<img src="${reply.user.avatar}" alt="${reply.user.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">` : ''}
                                             </div>
                                             <div class="reply-item-content">
                                                 <div class="reply-item-header">
                                                     <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
                                                     <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
+                                                    ${reply.user._id === '<%= user._id %>' ? 
+                                                        `<button class="reply-delete-btn" onclick="deleteReply('${postId}', '${comment._id}', '${reply._id}', event)" title="Delete reply">
+                                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                                                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                            </svg>
+                                                        </button>` 
+                                                        : ''
+                                                    }
                                                 </div>
                                                 <div class="reply-item-text">${reply.text}</div>
                                             </div>
                                         </div>
-                                    `).join('') : ''}
+                                    `).join('') : ''}                  
                                 </div>
                             </div>
                         </div>
@@ -1390,6 +1417,39 @@
         }
     }
 
+    async function deleteComment(postId, commentId) {
+        try {
+            const response = await fetch(`/posts/${postId}/comments/${commentId}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Remove the comment from DOM
+                const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+                if (commentElement) {
+                    commentElement.remove();
+                }
+                
+                // Update comment count
+                const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-count`);
+                commentCount.textContent = data.totalComments;
+                
+                // If no comments left, show empty state
+                const commentsList = document.getElementById(`comments-list-${postId}`);
+                if (data.totalComments === 0) {
+                    commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">No comments yet</div>';
+                }
+            } else {
+                alert(data.error || 'Failed to delete comment');
+            }
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            alert('Failed to delete comment');
+        }
+    }
+
     // Function to add a reply
     async function addReply(postId, commentId) {
         const input = document.querySelector(`#reply-input-${commentId} .reply-input`);
@@ -1420,14 +1480,30 @@
                 
                 // Add new reply to the replies container
                 const repliesContainer = document.getElementById(`replies-${commentId}`);
+                
+                // Get current user ID for delete button logic
+                const currentUserId = '<%= user._id %>';
+                
                 const newReplyHTML = `
                     <div class="reply-item">
-                        <img src="${data.reply.user.avatar || 'https://picsum.photos/seed/' + data.reply.user.username + '/200/200'}" 
-                            alt="${data.reply.user.name}" class="reply-item-avatar">
+                        <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; ${data.reply.user.avatar ? 'display: none;' : ''}">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            ${data.reply.user.avatar ? `<img src="${data.reply.user.avatar}" alt="${data.reply.user.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">` : ''}
+                        </div>
                         <div class="reply-item-content">
                             <div class="reply-item-header">
                                 <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${data.reply.user.username}'">${data.reply.user.name}</span>
                                 <span class="reply-item-time">${formatTime(data.reply.createdAt)}</span>
+                                ${data.reply.user._id === currentUserId ? 
+                                    `<button class="reply-delete-btn" onclick="deleteReply('${postId}', '${commentId}', '${data.reply._id}', event)" title="Delete reply">
+                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>` 
+                                    : ''
+                                }
                             </div>
                             <div class="reply-item-text">${data.reply.text}</div>
                         </div>
@@ -1437,14 +1513,17 @@
                 repliesContainer.innerHTML += newReplyHTML;
                 repliesContainer.style.display = 'block';
                 
-                // Update the main post's comment count
-                const postElement = document.querySelector(`[data-post-id="${postId}"]`);
-                const showRepliesBtn = document.querySelector(`[data-comment-id="${commentId}"] .show-replies-btn`);
+                // Update or create the show replies button
+                const actionsDiv = document.querySelector(`[data-comment-id="${commentId}"] .comment-item-actions`);
+                let showRepliesBtn = actionsDiv.querySelector('.show-replies-btn');
+                
                 if (showRepliesBtn) {
+                    const currentRepliesCount = repliesContainer.querySelectorAll('.reply-item').length;
                     showRepliesBtn.textContent = 'Hide replies';
+                    // Update the onclick to reflect current count when collapsed
+                    showRepliesBtn.setAttribute('onclick', `toggleReplies('${commentId}')`);
                 } else {
                     // Create new replies button if it doesn't exist
-                    const actionsDiv = document.querySelector(`[data-comment-id="${commentId}"] .comment-item-actions`);
                     actionsDiv.innerHTML += `<button class="show-replies-btn" onclick="toggleReplies('${commentId}')">Hide replies</button>`;
                 }
                 
@@ -1480,6 +1559,62 @@
         return '';
     }
 
+    async function deleteReply(postId, commentId, replyId, event) {
+        // Removed the confirmation dialog
+        try {
+            const response = await fetch(`/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Find and remove the specific reply element
+                const replyElement = event.target.closest('.reply-item');
+                if (replyElement) {
+                    replyElement.remove();
+                }
+                
+                // Update the replies count and button
+                const repliesContainer = document.getElementById(`replies-${commentId}`);
+                const showRepliesBtn = document.querySelector(`[data-comment-id="${commentId}"] .show-replies-btn`);
+                const remainingReplies = repliesContainer.querySelectorAll('.reply-item').length;
+                
+                if (remainingReplies === 0) {
+                    // Hide replies container and remove replies button
+                    repliesContainer.style.display = 'none';
+                    if (showRepliesBtn) {
+                        showRepliesBtn.remove();
+                    }
+                } else {
+                    // Update replies count - check if currently showing or hidden
+                    if (showRepliesBtn) {
+                        if (repliesContainer.style.display === 'block') {
+                            showRepliesBtn.textContent = 'Hide replies';
+                        } else {
+                            showRepliesBtn.textContent = `${remainingReplies} replies`;
+                        }
+                    }
+                }
+                
+                // Update total comment count for the post if provided
+                if (data.totalComments !== undefined) {
+                    const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-count`);
+                    if (commentCount) {
+                        commentCount.textContent = data.totalComments;
+                    }
+                }
+            } else {
+                alert(data.error || 'Failed to delete reply');
+            }
+        } catch (error) {
+            console.error('Error deleting reply:', error);
+            alert('Failed to delete reply. Please try again.');
+        }
+    }
     async function addComment(postId) {
         const input = document.querySelector(`#comments-${postId} .comment-input`);
         const submitBtn = document.querySelector(`#comments-${postId} .comment-submit`);
@@ -1503,11 +1638,71 @@
             
             if (data.success) {
                 input.value = '';
-                await loadComments(postId);
+                
+                // Instead of reloading all comments, just add the new one smoothly
+                const commentsList = document.getElementById(`comments-list-${postId}`);
+                
+                // Remove "No comments yet" message if it exists
+                const noCommentsMsg = commentsList.querySelector('div[style*="No comments yet"]');
+                if (noCommentsMsg) {
+                    noCommentsMsg.remove();
+                }
+                
+                // Get current user ID for delete button logic
+                const currentUserId = '<%= user._id %>';
+                
+                // Create new comment HTML
+                const newCommentHTML = `
+                    <div class="comment-item" data-comment-id="${data.comment._id}">
+                        <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a; ${data.comment.user.avatar ? 'display: none;' : ''}">
+                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                            </svg>
+                            ${data.comment.user.avatar ? `<img src="${data.comment.user.avatar}" alt="${data.comment.user.name}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">` : ''}
+                        </div>
+                        <div class="comment-item-content">
+                            <div class="comment-item-header">
+                                <span class="comment-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${data.comment.user.username}'">${data.comment.user.name}</span>
+                                <span class="comment-item-time">${formatTime(data.comment.createdAt)}</span>
+                                ${data.comment.user._id === currentUserId ? 
+                                    `<button class="comment-delete-btn" onclick="deleteComment('${postId}', '${data.comment._id}')" title="Delete comment">
+                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                            <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                        </svg>
+                                    </button>` 
+                                    : ''
+                                }
+                            </div>
+                            <div class="comment-item-text">${data.comment.text}</div>
+                            <div class="comment-item-actions">
+                                <button class="reply-btn" onclick="showReplyInput('${postId}', '${data.comment._id}')">Reply</button>
+                            </div>
+                            
+                            <div class="reply-input-container" id="reply-input-${data.comment._id}">
+                                <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; ${getCurrentUserAvatar() ? 'display: none;' : ''}">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                    ${getCurrentUserAvatar() ? `<img src="${getCurrentUserAvatar()}" alt="Your avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">` : ''}
+                                </div>
+                                <input type="text" class="reply-input" placeholder="Write a reply..." 
+                                    onkeypress="handleReplyKeypress(event, '${postId}', '${data.comment._id}')">
+                                <button class="reply-submit" onclick="addReply('${postId}', '${data.comment._id}')">Reply</button>
+                            </div>
+                            
+                            <div class="replies-container" id="replies-${data.comment._id}" style="display: none;">
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                // Add new comment to the top of the list
+                commentsList.insertAdjacentHTML('afterbegin', newCommentHTML);
                 
                 // Update comment count
                 const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-count`);
                 commentCount.textContent = data.totalComments;
+                
             } else {
                 alert(data.error || 'Failed to add comment');
             }

@@ -217,5 +217,75 @@ router.post('/profile/avatar/remove', requireAuth, async (req, res) => {
         res.json({ success: false, error: error.message });
     }
 });
+// Delete comment route
+router.delete('/posts/:postId/comments/:commentId', requireAuth, async (req, res) => {
+    try {
+        const { postId, commentId } = req.params;
+        const userId = req.session.userId;
+        
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+        
+        const comment = post.comments.id(commentId);
+        if (!comment) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+        
+        // Check if the user owns the comment
+        if (!comment.user.equals(userId)) {
+            return res.status(403).json({ error: 'You can only delete your own comments' });
+        }
+        
+        // Remove the comment
+        post.comments.pull(commentId);
+        await post.save();
+        
+        res.json({
+            success: true,
+            totalComments: post.comments.length
+        });
+    } catch (error) {
+        console.error('Error deleting comment:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+// Delete reply route
+router.delete('/posts/:postId/comments/:commentId/replies/:replyId', requireAuth, async (req, res) => {
+    try {
+        const { postId, commentId, replyId } = req.params;
+        const userId = req.session.userId;
+        
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+        
+        const comment = post.comments.id(commentId);
+        if (!comment) {
+            return res.status(404).json({ error: 'Comment not found' });
+        }
+        
+        const reply = comment.replies.id(replyId);
+        if (!reply) {
+            return res.status(404).json({ error: 'Reply not found' });
+        }
+        
+        // Check if the user owns the reply
+        if (!reply.user.equals(userId)) {
+            return res.status(403).json({ error: 'You can only delete your own replies' });
+        }
+        
+        // Remove the reply
+        comment.replies.pull(replyId);
+        await post.save();
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting reply:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
 module.exports = router;

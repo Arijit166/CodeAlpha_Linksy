@@ -765,6 +765,19 @@
         overflow: hidden;
         flex-shrink: 0;
     }
+    .comment-delete-btn {
+        background: none;
+        border: none;
+        color: #8a8a8a;
+        font-size: 12px;
+        cursor: pointer;
+        padding: 4px;
+        transition: color 0.2s;
+    }
+
+    .comment-delete-btn:hover {
+        color: #ff4458;
+    }
     </style>
 </head>
 <body>
@@ -1237,10 +1250,18 @@
                                     <span class="comment-item-time">${formatTime(comment.createdAt)}</span>
                                 </div>
                                 <div class="comment-item-text">${comment.text}</div>
-                                <div class="comment-item-actions">
+                               <div class="comment-item-actions">
                                     <button class="reply-btn" onclick="showReplyInput('${postId}', '${comment._id}')">Reply</button>
                                     ${comment.replies && comment.replies.length > 0 ? 
                                         `<button class="show-replies-btn" onclick="toggleReplies('${comment._id}')">${comment.replies.length} replies</button>` 
+                                        : ''
+                                    }
+                                    ${comment.user._id === '<%= currentUser._id %>' ? 
+                                        `<button class="comment-delete-btn" onclick="deleteComment('${postId}', '${comment._id}')" title="Delete comment">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                                                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                            </svg>
+                                        </button>` 
                                         : ''
                                     }
                                 </div>
@@ -1276,6 +1297,14 @@
                                                 <div class="reply-item-header">
                                                     <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
                                                     <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
+                                                    ${reply.user._id === '<%= currentUser._id %>' ? 
+                                                        `<button class="comment-delete-btn" onclick="deleteReply('${postId}', '${comment._id}', '${reply._id}')" title="Delete reply" style="margin-left: auto;">
+                                                            <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                                                <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                            </svg>
+                                                        </button>` 
+                                                        : ''
+                                                    }
                                                 </div>
                                                 <div class="reply-item-text">${reply.text}</div>
                                             </div>
@@ -1319,7 +1348,38 @@
             toggleBtn.textContent = `${repliesCount} replies`;
         }
     }
-
+    async function deleteComment(postId, commentId) {
+        try {
+            const response = await fetch(`/posts/${postId}/comments/${commentId}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Remove the comment from DOM
+                const commentElement = document.querySelector(`[data-comment-id="${commentId}"]`);
+                if (commentElement) {
+                    commentElement.remove();
+                }
+                
+                // Update comment count
+                const commentCount = document.querySelector(`[data-post-id="${postId}"] .comment-count`);
+                commentCount.textContent = data.totalComments;
+                
+                // If no comments left, show empty state
+                const commentsList = document.getElementById(`comments-list-${postId}`);
+                if (data.totalComments === 0) {
+                    commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">No comments yet</div>';
+                }
+            } else {
+                alert(data.error || 'Failed to delete comment');
+            }
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            alert('Failed to delete comment');
+        }
+    }
     // Function to add a reply
     async function addReply(postId, commentId) {
         const input = document.querySelector(`#reply-input-${commentId} .reply-input`);
@@ -1352,7 +1412,7 @@
                 const repliesContainer = document.getElementById(`replies-${commentId}`);
                 const newReplyHTML = `
                     <div class="reply-item">
-                        <img src="${data.reply.user.avatar || 'https://picsum.photos/seed/' + data.reply.user.username + '/200/200'}" 
+                        <img src="${data.reply.user.avatar || ''}" 
                             alt="${data.reply.user.name}" class="reply-item-avatar">
                         <div class="reply-item-content">
                             <div class="reply-item-header">
@@ -1409,6 +1469,27 @@
         }
         return '';
     }
+
+    async function deleteReply(postId, commentId, replyId) {
+        try {
+            const response = await fetch(`/posts/${postId}/comments/${commentId}/replies/${replyId}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Reload comments to reflect changes
+                await loadComments(postId);
+            } else {
+                alert(data.error || 'Failed to delete reply');
+            }
+        } catch (error) {
+            console.error('Error deleting reply:', error);
+            alert('Failed to delete reply');
+        }
+    }
+
     async function addComment(postId) {
         const input = document.querySelector(`#comments-${postId} .comment-input`);
         const submitBtn = document.querySelector(`#comments-${postId} .comment-submit`);
