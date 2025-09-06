@@ -207,5 +207,15 @@ router.post('/posts/:postId/comments/:commentId/reply', requireAuth, async (req,
     res.status(500).json({ error: 'Server error' });
   }
 });
+// Add this route to handle avatar removal
+router.post('/profile/avatar/remove', requireAuth, async (req, res) => {
+    try {
+        // Update user's avatar to null/empty in database
+        await User.findByIdAndUpdate(req.session.userId, { avatar: null });
+        res.json({ success: true });
+    } catch (error) {
+        res.json({ success: false, error: error.message });
+    }
+});
 
 module.exports = router;

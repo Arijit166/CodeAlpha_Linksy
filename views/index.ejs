@@ -1094,7 +1094,15 @@
                 <article class="post-card" data-post-id="<%= post._id %>">
                   <div class="post-header">
                     <div class="post-user">
-                      <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar" />
+                      <div class="post-avatar-container" style="position: relative; width: 40px; height: 40px;">
+                        <svg class="default-avatar-icon <%= post.user.avatar ? 'hidden' : '' %>" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; color: #8a8a8a; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                        </svg>
+                        <img src="<%= post.user.avatar || '' %>" 
+                            alt="<%= post.user.username %>" 
+                            class="post-avatar <%= !post.user.avatar ? 'hidden' : '' %>"
+                            onerror="this.style.display='none'; this.parentNode.querySelector('.default-avatar-icon').style.display='block'; this.parentNode.querySelector('.default-avatar-icon').classList.remove('hidden');">
+                    </div>
                       <div class="post-user-info">
                         <span class="post-username"><%= post.user.name %></span>
                         <span class="post-time"><%= post.timestamp %></span>
@@ -1409,23 +1417,17 @@
           if (data.comments.length === 0) {
             commentsList.innerHTML = '<div style="text-align: center; color: #666666; padding: 20px;">No comments yet</div>';
           } else {
-            commentsList.innerHTML = data.comments.map(comment => `
+           commentsList.innerHTML = data.comments.map(comment => `
               <div class="comment-item" data-comment-id="${comment._id}">
-                <img src="${comment.user.avatar || 'https://picsum.photos/seed/' + comment.user.username + '/200/200'}" 
-                    alt="${comment.user.name}" class="comment-item-avatar">
-                <div class="comment-item-content">
-                  <div class="comment-item-header">
-                    <span class="comment-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${comment.user.username}'">${comment.user.name}</span>
-                    <span class="comment-item-time">${formatTime(comment.createdAt)}</span>
+                  <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                      <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a; display: ${comment.user.avatar ? 'none' : 'block'};">
+                          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                      </svg>
+                      <img src="${comment.user.avatar || ''}" 
+                          alt="${comment.user.name}" 
+                          style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${comment.user.avatar ? 'block' : 'none'};"
+                          onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
                   </div>
-                  <div class="comment-item-text">${comment.text}</div>
-                  <div class="comment-item-actions">
-                    <button class="reply-btn" onclick="showReplyInput('${postId}', '${comment._id}')">Reply</button>
-                    ${comment.replies && comment.replies.length > 0 ? `<button class="show-replies-btn" onclick="toggleReplies('${comment._id}')">${comment.replies.length} replies</button>` : ''}
-                  </div>
-                </div>
-              </div>
-              
               <div class="reply-input-container" id="reply-input-${comment._id}">
                 <img src="${getCurrentUserAvatar()}" alt="Your avatar" class="reply-input-avatar">
                 <input type="text" class="reply-input" placeholder="Write a reply..." 

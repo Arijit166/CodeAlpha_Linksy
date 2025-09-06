@@ -590,6 +590,7 @@
             align-items: center;
             gap: 12px;
             margin-top: 8px;
+            justify-content: flex-start; /* This ensures buttons start from the left */
         }
 
         .reply-btn {
@@ -600,11 +601,13 @@
             font-weight: 600;
             cursor: pointer;
             transition: color 0.2s;
+            margin-left: auto; /* This pushes the reply button to the right, but not extreme right */
+            margin-right: 8px; /* Small margin from the edge */
         }
 
         .reply-btn:hover {
             color: #1da1f2;
-        }
+}
 
         .replies-container {
             margin-top: 12px;
@@ -723,11 +726,27 @@
             cursor: pointer;
             margin-top: 4px;
             transition: color 0.2s;
+            /* Remove any margin-left: auto if it exists */
         }
 
         .show-replies-btn:hover {
             color: #ffffff;
         }
+        .hidden {
+        display: none !important;
+    }
+    .post-avatar-container {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #3a3a3a;
+        background: #2a2a2a;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        flex-shrink: 0;
+    }
     </style>
 </head>
 <body>
@@ -749,12 +768,6 @@
                             id="profileAvatar" 
                             onerror="showDefaultAvatar()">
                     </div>
-                    <% if (profileUser._id.toString() === currentUser._id.toString()) { %>
-                        <div class="avatar-overlay">
-                            <span>Change Photo</span>
-                        </div>
-                        <input type="file" id="avatarInput" class="hidden-file-input" accept="image/*">
-                    <% } %>
                 </div>
             </div>
 
@@ -809,7 +822,15 @@
                     <% posts.forEach(post => { %>
                         <div class="post" data-post-id="<%= post._id %>">
                             <div class="post-header">
-                                <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar">
+                                <div class="post-avatar-container" style="position: relative; width: 40px; height: 40px;">
+                                    <svg class="default-avatar-icon <%= post.user.avatar ? 'hidden' : '' %>" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; color: #8a8a8a; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                    <img src="<%= post.user.avatar || '' %>" 
+                                        alt="<%= post.user.username %>" 
+                                        class="post-avatar <%= !post.user.avatar ? 'hidden' : '' %>"
+                                        onerror="this.style.display='none'; this.parentNode.querySelector('.default-avatar-icon').style.display='block'; this.parentNode.querySelector('.default-avatar-icon').classList.remove('hidden');">
+                                </div>
                                 <div class="post-info">
                                     <div class="post-user">
                                         <span class="post-name"><%= post.user.name %></span>
@@ -1160,8 +1181,15 @@
                 } else {
                     commentsList.innerHTML = data.comments.map(comment => `
                         <div class="comment-item" data-comment-id="${comment._id}">
-                            <img src="${comment.user.avatar || 'https://picsum.photos/seed/' + comment.user.username + '/200/200'}" 
-                                alt="${comment.user.name}" class="comment-item-avatar">
+                            <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a; display: ${comment.user.avatar ? 'none' : 'block'};">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                                <img src="${comment.user.avatar || ''}" 
+                                    alt="${comment.user.name}" 
+                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${comment.user.avatar ? 'block' : 'none'};"
+                                    onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                            </div>
                             <div class="comment-item-content">
                                 <div class="comment-item-header">
                                     <span class="comment-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${comment.user.username}'">${comment.user.name}</span>
@@ -1170,32 +1198,35 @@
                                 <div class="comment-item-text">${comment.text}</div>
                                 <div class="comment-item-actions">
                                     <button class="reply-btn" onclick="showReplyInput('${postId}', '${comment._id}')">Reply</button>
-                                    ${comment.replies.length > 0 ? `<button class="show-replies-btn" onclick="toggleReplies('${comment._id}')">${comment.replies.length} replies</button>` : ''}
+                                    ${comment.replies && comment.replies.length > 0 ? 
+                                        `<button class="show-replies-btn" onclick="toggleReplies('${comment._id}')">${comment.replies.length} replies</button>` 
+                                        : ''
+                                    }
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="reply-input-container" id="reply-input-${comment._id}">
-                            <img src="${getCurrentUserAvatar()}" alt="Your avatar" class="reply-input-avatar">
-                            <input type="text" class="reply-input" placeholder="Write a reply..." 
-                                onkeypress="handleReplyKeypress(event, '${postId}', '${comment._id}')">
-                            <button class="reply-submit" onclick="addReply('${postId}', '${comment._id}')">Reply</button>
-                        </div>
-                        
-                        <div class="replies-container" id="replies-${comment._id}" style="display: none;">
-                            ${comment.replies.map(reply => `
-                                <div class="reply-item">
-                                    <img src="${reply.user.avatar || 'https://picsum.photos/seed/' + reply.user.username + '/200/200'}" 
-                                        alt="${reply.user.name}" class="reply-item-avatar">
-                                    <div class="reply-item-content">
-                                        <div class="reply-item-header">
-                                            <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
-                                            <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
+                            
+                            <div class="reply-input-container" id="reply-input-${comment._id}">
+                                <img src="${getCurrentUserAvatar()}" alt="Your avatar" class="reply-input-avatar">
+                                <input type="text" class="reply-input" placeholder="Write a reply..." 
+                                    onkeypress="handleReplyKeypress(event, '${postId}', '${comment._id}')">
+                                <button class="reply-submit" onclick="addReply('${postId}', '${comment._id}')">Reply</button>
+                            </div>
+                            
+                            <div class="replies-container" id="replies-${comment._id}" style="display: none;">
+                                ${comment.replies && comment.replies.length > 0 ? comment.replies.map(reply => `
+                                    <div class="reply-item">
+                                        <img src="${reply.user.avatar || 'https://picsum.photos/seed/' + reply.user.username + '/200/200'}" 
+                                            alt="${reply.user.name}" class="reply-item-avatar">
+                                        <div class="reply-item-content">
+                                            <div class="reply-item-header">
+                                                <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
+                                                <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
+                                            </div>
+                                            <div class="reply-item-text">${reply.text}</div>
                                         </div>
-                                        <div class="reply-item-text">${reply.text}</div>
                                     </div>
-                                </div>
-                            `).join('')}
+                                `).join('') : ''}
+                            </div>
                         </div>
                     `).join('');
                 }

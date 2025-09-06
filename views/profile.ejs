@@ -485,15 +485,6 @@
             cursor: pointer;
             user-select: none;
         }
-        
-        .comment-item {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 12px;
-            padding: 8px;
-            border-radius: 8px;
-            transition: background 0.2s;
-        }
 
         .comment-item:hover {
             background: #1a1a1a;
@@ -510,13 +501,6 @@
             margin-bottom: 4px;
         }
 
-        .comment-item-actions {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-top: 8px;
-        }
-
         .reply-btn {
             background: none;
             border: none;
@@ -525,30 +509,30 @@
             font-weight: 600;
             cursor: pointer;
             transition: color 0.2s;
+            align-self: flex-start; /* Prevent individual button stretching */
+            width: auto; /* Ensure button doesn't expand */
         }
-
-        .reply-btn:hover {
-            color: #1da1f2;
-        }
-
+        
         .replies-container {
             margin-top: 12px;
-            margin-left: 44px; /* Indent replies */
+            margin-left: 0; /* Remove left margin since it's already inside comment-item-content */
             border-left: 2px solid #2a2a2a;
-            padding-left: 12px;
+            padding-left: 16px;
         }
 
+        .reply-input-container {
+            display: none;
+            margin-top: 8px;
+            margin-left: 0; /* Remove left margin */
+            padding: 8px;
+            background: #1a1a1a;
+            border-radius: 8px;
+        }
         .reply-item {
             display: flex;
             gap: 8px;
             margin-bottom: 8px;
-            padding: 6px;
-            border-radius: 6px;
-            transition: background 0.2s;
-        }
-
-        .reply-item:hover {
-            background: #1a1a1a;
+            padding: 6px 0;
         }
 
         .reply-item-avatar {
@@ -556,11 +540,38 @@
             height: 24px;
             border-radius: 50%;
             object-fit: cover;
+            flex-shrink: 0;
         }
 
         .reply-item-content {
             flex: 1;
+            min-width: 0; /* Prevents text overflow */
         }
+
+        /* Update the show-replies button positioning */
+        .comment-item-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 4px; /* Reduced from 8px */
+        }
+
+        /* Ensure proper comment structure */
+        .comment-item {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px; /* Increased spacing between main comments */
+            padding: 8px 0;
+        }
+
+        .reply-btn:hover {
+            color: #1da1f2;
+        }
+
+        .reply-item:hover {
+            background: #1a1a1a;
+        }
+
 
         .reply-item-header {
             display: flex;
@@ -584,14 +595,6 @@
             line-height: 1.4;
         }
 
-        .reply-input-container {
-            display: none;
-            margin-top: 8px;
-            margin-left: 44px;
-            padding: 8px;
-            background: #1a1a1a;
-            border-radius: 8px;
-        }
 
         .reply-input-container.show {
             display: flex;
@@ -646,13 +649,82 @@
             color: #8a8a8a;
             font-size: 12px;
             cursor: pointer;
-            margin-top: 4px;
+            margin-top: 0; /* Remove the margin-top: 4px */
             transition: color 0.2s;
         }
 
         .show-replies-btn:hover {
             color: #ffffff;
         }
+        .avatar-options {
+            position: absolute;
+            top: 90px;
+            left: 0;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            min-width: 150px;
+            display: none;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+        }
+
+        .avatar-option {
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: background 0.2s;
+            font-size: 14px;
+        }
+
+        .avatar-option:hover {
+            background: #2a2a2a;
+        }
+
+        .avatar-option:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .avatar-option:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+
+        .avatar-option.remove {
+            color: #ff6b6b;
+        }
+        .post-avatar-container {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 2px solid #3a3a3a;
+            background: #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+    .hidden {
+        display: none !important;
+    }
+    .comment-input-container img {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .comment-input-container svg {
+        display: none;
+    }
+
+    .comment-input-container img[src=""] {
+        display: none;
+    }
+
+    .comment-input-container img[src=""]:not([src]) + svg,
+    .comment-input-container img:not([src]) + svg {
+        display: block;
+    }
     </style>
 </head>
 <body>
@@ -673,10 +745,16 @@
                             id="profileAvatar" 
                             onerror="showDefaultAvatar()">
                     </div>
-                    <div class="avatar-overlay">
+                    <!-- <div class="avatar-overlay" id="avatarOverlay">
                         <span>Change Photo</span>
-                    </div>
+                    </div> -->
                     <input type="file" id="avatarInput" class="hidden-file-input" accept="image/*">
+                    
+                    <!-- Avatar options menu -->
+                    <div class="avatar-options" id="avatarOptions">
+                        <div class="avatar-option" onclick="selectNewPhoto()">Upload Photo</div>
+                        <div class="avatar-option remove" onclick="removePhoto()" id="removeOption">Remove Photo</div>
+                    </div>
                 </div>
             </div>
 
@@ -758,7 +836,15 @@
                     <% posts.forEach(post => { %>
                         <div class="post" data-post-id="<%= post._id %>">
                             <div class="post-header">
-                                <img src="<%= post.user.avatar %>" alt="<%= post.user.username %>" class="post-avatar">
+                                <div class="post-avatar-container" style="position: relative; width: 40px; height: 40px;">
+                                    <svg class="default-avatar-icon <%= post.user.avatar ? 'hidden' : '' %>" viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px; color: #8a8a8a; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+                                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                    </svg>
+                                    <img src="<%= post.user.avatar || '' %>" 
+                                        alt="<%= post.user.username %>" 
+                                        class="post-avatar <%= !post.user.avatar ? 'hidden' : '' %>"
+                                        onerror="this.style.display='none'; this.parentNode.querySelector('.default-avatar-icon').style.display='block'; this.parentNode.querySelector('.default-avatar-icon').classList.remove('hidden');">
+                                </div>
                                 <div class="post-info">
                                     <div class="post-user">
                                         <span class="post-name"><%= post.user.name %></span>
@@ -793,12 +879,17 @@
                             
                             <!-- Comments section (initially hidden) -->
                             <div class="comments-section" id="comments-<%= post._id %>" style="display: none;">
-                                <div class="comment-input-container">
-                                    <img src="<%= user.avatar %>" alt="Your avatar" class="comment-avatar">
-                                    <input type="text" class="comment-input" placeholder="Add a comment..." 
-                                        onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
-                                    <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
-                                </div>
+                                    <div class="comment-input-container">
+                                        <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                            <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a;">
+                                                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                            </svg>
+                                            <img src="<%= user.avatar || '' %>" alt="Your avatar" class="comment-avatar" onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                        </div>
+                                        <input type="text" class="comment-input" placeholder="Add a comment..." 
+                                            onkeypress="handleCommentKeypress(event, '<%= post._id %>')">
+                                        <button class="comment-submit" onclick="addComment('<%= post._id %>')">Post</button>
+                                    </div>
                                 <div class="comments-list" id="comments-list-<%= post._id %>">
                                     <!-- Comments will be loaded here -->
                                 </div>
@@ -837,22 +928,64 @@
             document.getElementById('profileAvatar').style.display = 'none';
             document.getElementById('defaultAvatarIcon').style.display = 'block';
         }
-        // Avatar change functionality
-        document.getElementById('avatarContainer').addEventListener('click', () => {
-            document.getElementById('avatarInput').click();
-        });
-        document.addEventListener('DOMContentLoaded', function() {
-            const userHasAvatar = '<%= user && user.avatar ? "true" : "false" %>';
-            const avatar = document.getElementById('profileAvatar');
-            const defaultIcon = document.getElementById('defaultAvatarIcon');
+       // Avatar change functionality
+        document.getElementById('avatarContainer').addEventListener('click', (e) => {
+            e.stopPropagation();
+            const options = document.getElementById('avatarOptions');
+            const hasAvatar = document.getElementById('profileAvatar').src && 
+                            document.getElementById('profileAvatar').style.display !== 'none';
             
-            if (userHasAvatar === 'false' || !avatar.src || avatar.src.trim() === '') {
-                avatar.style.display = 'none';
-                defaultIcon.style.display = 'block';
-            } else {
-                defaultIcon.style.display = 'none';
-            }
+            // Show/hide remove option based on whether user has an avatar
+            document.getElementById('removeOption').style.display = hasAvatar ? 'block' : 'none';
+            
+            // Toggle options menu
+            options.style.display = options.style.display === 'block' ? 'none' : 'block';
         });
+
+        // Close options menu when clicking elsewhere
+        document.addEventListener('click', () => {
+            document.getElementById('avatarOptions').style.display = 'none';
+        });
+
+        function selectNewPhoto() {
+            document.getElementById('avatarInput').click();
+            document.getElementById('avatarOptions').style.display = 'none';
+        }
+
+       async function removePhoto() {
+        try {
+            const response = await fetch('/profile/avatar/remove', {
+                method: 'POST'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Show default icon and hide avatar
+                document.getElementById('defaultAvatarIcon').style.display = 'block';
+                document.getElementById('profileAvatar').style.display = 'none';
+                document.getElementById('profileAvatar').src = '';
+                
+                // Update all post avatars on the page to show default icon
+                document.querySelectorAll('.post-avatar-container').forEach(container => {
+                    const img = container.querySelector('.post-avatar');
+                    const icon = container.querySelector('.default-avatar-icon');
+                    if (img && icon) {
+                        img.style.display = 'none';
+                        img.src = '';
+                        icon.style.display = 'block';
+                    }
+                });
+            } else {
+                alert('Failed to remove avatar');
+            }
+        } catch (error) {
+            console.error('Avatar removal error:', error);
+            alert('An error occurred. Please try again.');
+        }
+        
+        document.getElementById('avatarOptions').style.display = 'none';
+    }
 
         // Update the existing avatar change handler to hide/show the default icon
         document.getElementById('avatarInput').addEventListener('change', async (e) => {
@@ -1145,10 +1278,18 @@
                 if (data.comments.length === 0) {
                     commentsList.innerHTML = '<div style="text-align: center; color: #8a8a8a; padding: 20px;">No comments yet</div>';
                 } else {
+                    // In the loadComments function, replace the comment HTML generation with this:
                     commentsList.innerHTML = data.comments.map(comment => `
                         <div class="comment-item" data-comment-id="${comment._id}">
-                            <img src="${comment.user.avatar || 'https://picsum.photos/seed/' + comment.user.username + '/200/200'}" 
-                                alt="${comment.user.name}" class="comment-item-avatar">
+                            <div style="position: relative; width: 32px; height: 32px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px; color: #8a8a8a; display: ${comment.user.avatar ? 'none' : 'block'};">
+                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                </svg>
+                                <img src="${comment.user.avatar || ''}" 
+                                    alt="${comment.user.name}" 
+                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${comment.user.avatar ? 'block' : 'none'};"
+                                    onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                            </div>
                             <div class="comment-item-content">
                                 <div class="comment-item-header">
                                     <span class="comment-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${comment.user.username}'">${comment.user.name}</span>
@@ -1157,32 +1298,46 @@
                                 <div class="comment-item-text">${comment.text}</div>
                                 <div class="comment-item-actions">
                                     <button class="reply-btn" onclick="showReplyInput('${postId}', '${comment._id}')">Reply</button>
-                                    ${comment.replies.length > 0 ? `<button class="show-replies-btn" onclick="toggleReplies('${comment._id}')">${comment.replies.length} replies</button>` : ''}
+                                    ${comment.replies && comment.replies.length > 0 ? 
+                                        `<button class="show-replies-btn" onclick="toggleReplies('${comment._id}')">${comment.replies.length} replies</button>` 
+                                        : ''
+                                    }
+                                </div>
+                                
+                                <div class="reply-input-container" id="reply-input-${comment._id}">
+                                    <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                        <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${getCurrentUserAvatar() ? 'none' : 'block'};">
+                                            <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                        </svg>
+                                        <img src="${getCurrentUserAvatar()}" alt="Your avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${getCurrentUserAvatar() ? 'block' : 'none'};" onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                    </div>
+                                    <input type="text" class="reply-input" placeholder="Write a reply..." 
+                                        onkeypress="handleReplyKeypress(event, '${postId}', '${comment._id}')">
+                                    <button class="reply-submit" onclick="addReply('${postId}', '${comment._id}')">Reply</button>
+                                </div>
+                                
+                                <div class="replies-container" id="replies-${comment._id}" style="display: none;">
+                                    ${comment.replies && comment.replies.length > 0 ? comment.replies.map(reply => `
+                                        <div class="reply-item">
+                                            <div style="position: relative; width: 24px; height: 24px; border-radius: 50%; border: 2px solid #3a3a3a; background: #2a2a2a; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;">
+                                                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 12px; height: 12px; color: #8a8a8a; display: ${reply.user.avatar ? 'none' : 'block'};">
+                                                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                                                </svg>
+                                                <img src="${reply.user.avatar || ''}" alt="${reply.user.name}" 
+                                                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: ${reply.user.avatar ? 'block' : 'none'};"
+                                                    onerror="this.style.display='none'; this.parentNode.querySelector('svg').style.display='block';">
+                                            </div>
+                                            <div class="reply-item-content">
+                                                <div class="reply-item-header">
+                                                    <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
+                                                    <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
+                                                </div>
+                                                <div class="reply-item-text">${reply.text}</div>
+                                            </div>
+                                        </div>
+                                    `).join('') : ''}
                                 </div>
                             </div>
-                        </div>
-                        
-                        <div class="reply-input-container" id="reply-input-${comment._id}">
-                            <img src="${getCurrentUserAvatar()}" alt="Your avatar" class="reply-input-avatar">
-                            <input type="text" class="reply-input" placeholder="Write a reply..." 
-                                onkeypress="handleReplyKeypress(event, '${postId}', '${comment._id}')">
-                            <button class="reply-submit" onclick="addReply('${postId}', '${comment._id}')">Reply</button>
-                        </div>
-                        
-                        <div class="replies-container" id="replies-${comment._id}" style="display: none;">
-                            ${comment.replies.map(reply => `
-                                <div class="reply-item">
-                                    <img src="${reply.user.avatar || 'https://picsum.photos/seed/' + reply.user.username + '/200/200'}" 
-                                        alt="${reply.user.name}" class="reply-item-avatar">
-                                    <div class="reply-item-content">
-                                        <div class="reply-item-header">
-                                            <span class="reply-item-name" style="cursor: pointer; color: #1da1f2;" onclick="window.location.href='/user/${reply.user.username}'">${reply.user.name}</span>
-                                            <span class="reply-item-time">${formatTime(reply.createdAt)}</span>
-                                        </div>
-                                        <div class="reply-item-text">${reply.text}</div>
-                                    </div>
-                                </div>
-                            `).join('')}
                         </div>
                     `).join('');
                 }
@@ -1303,7 +1458,11 @@
 
     // Helper function to get current user avatar (you'll need to make this available)
     function getCurrentUserAvatar() {
-        return document.querySelector('.comment-avatar')?.src || 'https://picsum.photos/seed/default/200/200';
+        const currentUserHasAvatar = '<%= user && user.avatar ? "true" : "false" %>';
+        if (currentUserHasAvatar === 'true') {
+            return '<%= user.avatar %>';
+        }
+        return '';
     }
 
     async function addComment(postId) {
