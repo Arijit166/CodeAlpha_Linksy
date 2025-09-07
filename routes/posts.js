@@ -210,10 +210,13 @@ router.post('/posts/:postId/comments/:commentId/reply', requireAuth, async (req,
 // Add this route to handle avatar removal
 router.post('/profile/avatar/remove', requireAuth, async (req, res) => {
     try {
-        // Update user's avatar to null/empty in database
-        await User.findByIdAndUpdate(req.session.userId, { avatar: null });
+        // Update user's avatar to empty string instead of null
+        await User.findByIdAndUpdate(req.session.userId, { 
+            $unset: { avatar: 1 } // This removes the avatar field completely
+        });
         res.json({ success: true });
     } catch (error) {
+        console.error('Avatar removal error:', error);
         res.json({ success: false, error: error.message });
     }
 });
