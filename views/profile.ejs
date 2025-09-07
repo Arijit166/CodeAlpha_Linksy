@@ -754,7 +754,148 @@
     .profile-avatar-img:not([src]) {
         display: none !important;
     }
-    
+    /* Post options menu styles */
+    .post-options {
+        position: relative;
+    }
+
+    .post-options-btn {
+        background: none;
+        border: none;
+        color: #8a8a8a;
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        transition: background 0.2s, color 0.2s;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .post-options-btn:hover {
+        background: #1a1a1a;
+        color: #ffffff;
+    }
+
+    .post-options-menu {
+        position: absolute;
+        top: 30px;
+        right: 0;
+        background: #1a1a1a;
+        border: 1px solid #3a3a3a;
+        border-radius: 8px;
+        min-width: 140px;
+        display: none;
+        z-index: 100;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+
+    .post-options-menu.show {
+        display: block;
+    }
+
+    .post-option {
+        padding: 12px 16px;
+        cursor: pointer;
+        transition: background 0.2s;
+        font-size: 14px;
+        color: #ffffff;
+        border-radius: 8px;
+    }
+
+    .post-option:hover {
+        background: #2a2a2a;
+    }
+
+    .post-option.delete {
+        color: #ff6b6b;
+    }
+
+    .post-option.delete:hover {
+        background: rgba(255, 107, 107, 0.1);
+    }
+
+    /* Confirmation modal styles */
+    .confirmation-modal {
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .confirmation-modal-content {
+        background: #1a1a1a;
+        border: 1px solid #3a3a3a;
+        border-radius: 16px;
+        width: 90%;
+        max-width: 320px;
+        padding: 0;
+        overflow: hidden;
+    }
+
+    .confirmation-modal-header {
+        padding: 20px 20px 0 20px;
+        text-align: center;
+    }
+
+    .confirmation-modal-header h3 {
+        margin: 0 0 8px 0;
+        font-size: 20px;
+        font-weight: 700;
+        color: #ffffff;
+    }
+
+    .confirmation-modal-header p {
+        margin: 0;
+        font-size: 14px;
+        color: #8a8a8a;
+        line-height: 1.4;
+    }
+
+    .confirmation-modal-actions {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .confirmation-btn {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .confirmation-btn.delete {
+        background: #ff4458;
+        color: #ffffff;
+    }
+
+    .confirmation-btn.delete:hover {
+        background: #e73c4e;
+    }
+
+    .confirmation-btn.cancel {
+        background: transparent;
+        color: #ffffff;
+        border: 1px solid #3a3a3a;
+    }
+
+    .confirmation-btn.cancel:hover {
+        background: #2a2a2a;
+    }
     </style>
 </head>
 <body>
@@ -876,6 +1017,38 @@
                                     <div class="post-user">
                                         <span class="post-name"><%= post.user.name %></span>
                                         <span class="post-time"> • <%= post.timestamp %></span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Three-dot menu (only show for own posts) -->
+                                <% if (post.user._id.toString() === user._id.toString()) { %>
+                                    <div class="post-options">
+                                        <button class="post-options-btn" onclick="togglePostOptions('<%= post._id %>')">
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                                <circle cx="12" cy="5" r="2"/>
+                                                <circle cx="12" cy="12" r="2"/>
+                                                <circle cx="12" cy="19" r="2"/>
+                                            </svg>
+                                        </button>
+                                        <div class="post-options-menu" id="options-<%= post._id %>">
+                                            <div class="post-option delete" onclick="showDeleteConfirmation('<%= post._id %>')">
+                                                Delete post
+                                            </div>
+                                        </div>
+                                    </div>
+                                <% } %>
+                            </div>
+
+                            <!-- Confirmation modal (add this right after the posts container, outside the loop) -->
+                            <div id="deleteConfirmationModal" class="confirmation-modal" style="display: none;">
+                                <div class="confirmation-modal-content">
+                                    <div class="confirmation-modal-header">
+                                        <h3>Delete post?</h3>
+                                        <p>This can't be undone and it will be removed from your profile and the timeline of any accounts that follow you.</p>
+                                    </div>
+                                    <div class="confirmation-modal-actions">
+                                        <button class="confirmation-btn delete" onclick="confirmDeletePost()">Delete</button>
+                                        <button class="confirmation-btn cancel" onclick="hideDeleteConfirmation()">Cancel</button>
                                     </div>
                                 </div>
                             </div>
@@ -1766,6 +1939,99 @@
         if (hours < 24) return `${hours}h`;
         return `${days}d`;
     }
+    let postToDelete = null;
+
+    // Toggle post options menu
+    function togglePostOptions(postId, event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        
+        // Hide all other open menus
+        document.querySelectorAll('.post-options-menu').forEach(menu => {
+            if (menu.id !== `options-${postId}`) {
+                menu.classList.remove('show');
+            }
+        });
+        
+        const menu = document.getElementById(`options-${postId}`);
+        menu.classList.toggle('show');
+    }
+
+    // Show delete confirmation modal
+    function showDeleteConfirmation(postId) {
+        postToDelete = postId;
+        document.getElementById('deleteConfirmationModal').style.display = 'flex';
+        
+        // Hide the options menu
+        document.getElementById(`options-${postId}`).classList.remove('show');
+    }
+
+    // Hide delete confirmation modal
+    function hideDeleteConfirmation() {
+        postToDelete = null;
+        document.getElementById('deleteConfirmationModal').style.display = 'none';
+    }
+
+    // Confirm and execute post deletion
+    async function confirmDeletePost() {
+        if (!postToDelete) return;
+        
+        try {
+            const response = await fetch(`/posts/${postToDelete}`, {
+                method: 'DELETE'
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                // Remove the post from DOM
+                const postElement = document.querySelector(`[data-post-id="${postToDelete}"]`);
+                if (postElement) {
+                    postElement.remove();
+                }
+                
+                // Hide modal
+                hideDeleteConfirmation();
+                
+                // Update posts count if exists
+                const postsCountElement = document.querySelector('.stats .stat:last-child strong');
+                if (postsCountElement) {
+                    const currentCount = parseInt(postsCountElement.textContent);
+                    postsCountElement.textContent = currentCount - 1;
+                }
+                
+            } else {
+                alert(data.error || 'Failed to delete post');
+            }
+        } catch (error) {
+            console.error('Error deleting post:', error);
+            alert('Failed to delete post. Please try again.');
+        }
+    }
+
+    // Close menus when clicking outside
+    document.addEventListener('click', function(event) {
+        // Close post options menus
+        if (!event.target.closest('.post-options')) {
+            document.querySelectorAll('.post-options-menu').forEach(menu => {
+                menu.classList.remove('show');
+            });
+        }
+        
+        // Close confirmation modal when clicking outside
+        const deleteModal = document.getElementById('deleteConfirmationModal');
+        if (event.target === deleteModal) {
+            hideDeleteConfirmation();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape') {
+            hideDeleteConfirmation();
+        }
+    });
     </script>
 </body>
 </html>

@@ -290,5 +290,30 @@ router.delete('/posts/:postId/comments/:commentId/replies/:replyId', requireAuth
         res.status(500).json({ error: 'Server error' });
     }
 });
+// Delete post route
+router.delete('/posts/:postId', requireAuth, async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const userId = req.session.userId;
+        
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+        
+        // Check if the user owns the post
+        if (!post.user.equals(userId)) {
+            return res.status(403).json({ error: 'You can only delete your own posts' });
+        }
+        
+        // Delete the post
+        await Post.findByIdAndDelete(postId);
+        
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting post:', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
 module.exports = router;
