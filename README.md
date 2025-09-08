@@ -106,7 +106,8 @@ npm install
 ```
 npm start
 ```
-##### App will run at 👉 http://localhost:3000
+## App will run at 👉 http://localhost:3000
+## 🌍Live Deployment: https://codealpha-linksy.onrender.com
 
 ### 📜 Scripts
 
