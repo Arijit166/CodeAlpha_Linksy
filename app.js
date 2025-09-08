@@ -28,7 +28,7 @@ app.use(session({
     mongoUrl: process.env.DATABASE_URL
   }),
   cookie: {
-    secure: false, // Set to true in production with HTTPS
+    secure: process.env.NODE_ENV === "production",
     maxAge: 1000 * 60 * 60 * 24 * 7 // 7 days
   }
 }));
@@ -62,7 +62,7 @@ app.use((req, res) => {
   res.status(404).render('error');
 });
 
-const PORT = 3000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 3000; 
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
 });
