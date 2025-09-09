@@ -240,13 +240,22 @@
     <%- include('../partials/nav') %>
     <div class="create-post-container">
         <div class="post-header">
-            <img src="<%= user.avatar %>" alt="Your avatar" class="user-avatar">
+            <div class="user-avatar" style="position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                <svg class="default-avatar-icon" viewBox="0 0 24 24" fill="currentColor" style="width: 24px; height: 24px; color: #8a8a8a; display: block;">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                </svg>
+                <img src="<%= user.avatar || '' %>" 
+                    alt="Your avatar" 
+                    class="user-avatar-img"
+                    style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: none;"
+                    onerror="this.style.display='none'; this.parentNode.querySelector('.default-avatar-icon').style.display='block';"
+                    onload="if(this.src && this.src !== window.location.href) { this.style.display='block'; this.parentNode.querySelector('.default-avatar-icon').style.display='none'; }">
+            </div>
             <div class="user-info">
                 <h3><%= user.name %></h3>
                 <div class="username">@<%= user.username %></div>
             </div>
         </div>
-
         <form class="post-form" id="postForm">
             <div class="caption-container">
                 <textarea 
@@ -283,6 +292,19 @@
     </div>
 
     <script>
+        // Initialize avatar display on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const avatarImg = document.querySelector('.user-avatar-img');
+            const defaultIcon = document.querySelector('.default-avatar-icon');
+            
+            if (avatarImg.src && avatarImg.src !== window.location.href && avatarImg.src.trim() !== '') {
+                avatarImg.style.display = 'block';
+                defaultIcon.style.display = 'none';
+            } else {
+                avatarImg.style.display = 'none';
+                defaultIcon.style.display = 'block';
+            }
+        });
         const compressImage = (file, maxSizeKB = 500, quality = 0.8) => {
             return new Promise((resolve) => {
                 const canvas = document.createElement('canvas');
