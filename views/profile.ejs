@@ -1039,19 +1039,6 @@
                                 <% } %>
                             </div>
 
-                            <!-- Confirmation modal (add this right after the posts container, outside the loop) -->
-                            <div id="deleteConfirmationModal" class="confirmation-modal" style="display: none;">
-                                <div class="confirmation-modal-content">
-                                    <div class="confirmation-modal-header">
-                                        <h3>Delete post?</h3>
-                                        <p>This can't be undone and it will be removed from your profile and the timeline of any accounts that follow you.</p>
-                                    </div>
-                                    <div class="confirmation-modal-actions">
-                                        <button class="confirmation-btn delete" onclick="confirmDeletePost()">Delete</button>
-                                        <button class="confirmation-btn cancel" onclick="hideDeleteConfirmation()">Cancel</button>
-                                    </div>
-                                </div>
-                            </div>
                             <% if (post.caption) { %>
                                 <div class="post-content"><%= post.caption %></div>
                             <% } %>
@@ -1100,6 +1087,8 @@
             </div>
         </div>
     </div>
+    
+    <!-- Modals (moved outside the posts loop) -->
     <div id="followModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -1111,6 +1100,7 @@
             </div>
         </div>
     </div>
+    
     <div id="likesModal" class="modal" style="display: none;">
         <div class="modal-content">
             <div class="modal-header">
@@ -1123,6 +1113,19 @@
         </div>
     </div>
 
+    <!-- Delete confirmation modal (moved outside the posts loop) -->
+    <div id="deleteConfirmationModal" class="confirmation-modal" style="display: none;">
+        <div class="confirmation-modal-content">
+            <div class="confirmation-modal-header">
+                <h3>Delete post?</h3>
+                <p>This can't be undone and it will be removed from your profile and the timeline of any accounts that follow you.</p>
+            </div>
+            <div class="confirmation-modal-actions">
+                <button class="confirmation-btn delete" onclick="confirmDeletePost()">Delete</button>
+                <button class="confirmation-btn cancel" onclick="hideDeleteConfirmation()">Cancel</button>
+            </div>
+        </div>
+    </div>
     <script>
        function showDefaultAvatar() {
             const profileAvatar = document.getElementById('profileAvatar');
@@ -1970,7 +1973,10 @@
     // Hide delete confirmation modal
     function hideDeleteConfirmation() {
         postToDelete = null;
-        document.getElementById('deleteConfirmationModal').style.display = 'none';
+        const modal = document.getElementById('deleteConfirmationModal');
+        if (modal) {
+            modal.style.display = 'none';
+        }
     }
 
     // Confirm and execute post deletion
