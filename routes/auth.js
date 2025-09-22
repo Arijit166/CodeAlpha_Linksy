@@ -15,20 +15,29 @@ router.post('/signin', async (req, res) => {
     const user = await User.findOne({ email });
    
     if (!user) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+      return res.status(400).json({ success: false, error: 'Invalid credentials' });
     }
    
     const isMatch = await bcrypt.compare(password, user.password);
    
     if (!isMatch) {
-      return res.status(400).json({ error: 'Invalid credentials' });
+      return res.status(400).json({ success: false, error: 'Invalid credentials' });
     }
    
+    // Save session and wait for it to be saved
     req.session.userId = user._id;
-    res.json({ success: true, redirect: '/' });
+    
+    req.session.save((err) => {
+      if (err) {
+        console.error('Session save error:', err);
+        return res.status(500).json({ success: false, error: 'Session error' });
+      }
+      res.json({ success: true, redirect: '/' });
+    });
+    
   } catch (error) {
     console.error('Sign in error:', error);
-    res.status(500).json({ error: 'Server error' });
+    res.status(500).json({ success: false, error: 'Server error' });
   }
 });
 
