@@ -90,7 +90,7 @@ Clone the repo 📥
 
 ```
 git clone https://github.com/Arijit166/CodeAlpha_Linksy
-cd CodeAlpha_Linksy
+cd Linksy
 ```
 ### Install dependencies 📦
 
